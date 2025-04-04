@@ -11,10 +11,9 @@ export default function Home() {
     return (
         <>
             <Head>
-                <title>Phaser Nextjs Template</title>
-                <meta name="description" content="A Phaser 3 Next.js project template that demonstrates Next.js with React communication and uses Vite for bundling." />
+                <meta name="description" content="Un template di progetto Phaser 3 con Next.js che dimostra la comunicazione tra Next.js e React e utilizza Vite per il bundling." />
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
-                <link rel="icon" href="/favicon.png" />
+                <link rel="icon" href="/icona.png" />
             </Head>
             <main className={`${styles.main} ${inter.className}`}>
                 <AppWithoutSSR />
