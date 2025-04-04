@@ -8,6 +8,8 @@ export class MainMenu extends Scene
     logo: GameObjects.Image;
     title: GameObjects.Text;
     logoTween: Phaser.Tweens.Tween | null;
+    cursors: Phaser.Types.Input.Keyboard.CursorKeys;
+    keys: any;
 
     constructor ()
     {
@@ -27,6 +29,33 @@ export class MainMenu extends Scene
         }).setOrigin(0.5).setDepth(100);
 
         EventBus.emit('current-scene-ready', this);
+
+        this.cursors = this.input.keyboard?.createCursorKeys() || {} as Phaser.Types.Input.Keyboard.CursorKeys;
+    
+        this.keys = this.input.keyboard?.addKeys({
+            z: Phaser.Input.Keyboard.KeyCodes.Z,
+            spaceBar: Phaser.Input.Keyboard.KeyCodes.SPACE,
+        });
+    }
+
+    update ()
+    {
+        const jump = 10;
+
+        if (this.logoTween && 
+            (this.cursors.up.isDown || this.cursors.down.isDown ||
+            this.keys.z.isDown || 
+            this.keys.spaceBar.isDown)) {
+            this.logoTween.stop();
+            this.logoTween = null;
+        }
+
+        if (this.keys?.z?.isDown || this.cursors.up.isDown || this.keys?.spaceBar?.isDown) {
+            this.logo.y -= jump;
+            setTimeout(() => {      
+                this.logo.y += jump;          
+            }, 200);
+        }
     }
     
     changeScene ()
@@ -57,13 +86,12 @@ export class MainMenu extends Scene
         {
             this.logoTween = this.tweens.add({
                 targets: this.logo,
-                x: { value: 750, duration: 3000, ease: 'Back.easeInOut' },
-                y: { value: 80, duration: 1500, ease: 'Sine.easeOut' },
+                x: { value: 100, duration: 2000, ease: 'Back.easeInOut' },
+                // y: { value: 10, duration: 10  },
                 yoyo: true,
                 repeat: -1,
                 onUpdate: () => {
-                    if (reactCallback)
-                    {
+                    if (reactCallback) {
                         reactCallback({
                             x: Math.floor(this.logo.x),
                             y: Math.floor(this.logo.y)
