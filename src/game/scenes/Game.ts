@@ -385,8 +385,6 @@ export class Game extends Phaser.Scene {
         
         const nuovoVita = cuoreBonus.inizia()
         
-        this.testoPunteggio.setText('' + this.punteggio);
-
         this.vita = nuovoVita;
 
         if (this.vita >= 10) {
