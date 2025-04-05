@@ -14,6 +14,7 @@ export class Game extends Phaser.Scene {
     testoPunteggio: Phaser.GameObjects.Text;
     vita: number;
     testoVita: Phaser.GameObjects.Text;
+    casse: Phaser.Physics.Arcade.Group;
     private velocitaMassima: number;
     private intervalloIncremento: number;
     private punteggioTarget: number;
@@ -47,9 +48,13 @@ export class Game extends Phaser.Scene {
             frameWidth: 16,
             frameHeight: 16
         });
+        this.load.image('crate', 'assets/cassa.png')
     }
 
     create() {
+        // Ajouter cette ligne pour initialiser le groupe casse
+        this.casse = this.physics.add.group();
+        
         this.camera = this.cameras.main;
         this.ostacolo = this.physics.add.group();
         
@@ -177,6 +182,32 @@ export class Game extends Phaser.Scene {
         });
         this.cursori = this?.input?.keyboard?.createCursorKeys();
 
+        this.add.image(this.cameras.main.width - 175, 5, 'casse').setOrigin(0, 0).setScale(3);
+
+        this.time.addEvent({
+            delay: Phaser.Math.Between(3000, 8000),
+            callback: () => {
+            this.generaCassa();
+            this.time.addEvent({
+                delay: Phaser.Math.Between(3000, 8000),
+                callback: this.generaCassa,
+                callbackScope: this,
+                loop: false
+            });
+            },
+            callbackScope: this,
+            loop: true
+        });
+
+        // Ajouter la collision entre le joueur et les caisses
+        this.physics.add.overlap(
+            this.Giocatore, 
+            this.casse, 
+            this.suPlayerCrateCollision, 
+            null, 
+            this
+        );
+
         this.initCollisione()
         EventBus.emit('current-scene-ready', this);
     }
@@ -267,6 +298,8 @@ export class Game extends Phaser.Scene {
             }
         }
 
+        this.aggiornareCasse();
+
     }
 
     calcolaNuovoPunteggioTarget() {
@@ -312,5 +345,32 @@ export class Game extends Phaser.Scene {
         if (this.velocitaCorrente > this.velocitaMassima) {
             this.velocitaCorrente = this.velocitaMassima;
         }
+    }
+
+    private generaCassa(): void {
+        const y = Phaser.Math.Between(this.cameras.main.height - 375, this.cameras.main.height - 250);
+        const crate = this.casse.create(this.cameras.main.width + 100, y, 'crate');
+        crate.setOrigin(0, 0);
+        crate.setScale(3);
+
+        crate.setImmovable(true);
+        crate.body.allowGravity = false;
+    }
+
+    private aggiornareCasse(): void {
+        this.casse.getChildren().forEach((child) => {
+            const crate = child as Phaser.Physics.Arcade.Sprite;
+
+            crate.x -= this.velocitaCorrente * 3;
+
+            if (crate.x < -crate.displayWidth) {
+                crate.destroy();
+            }
+        });
+    }
+
+    private suPlayerCrateCollision(player: Phaser.GameObjects.GameObject, crate: Phaser.GameObjects.GameObject): void {
+        // ADD logic for bonus
+        crate.destroy();
     }
 }
