@@ -42,9 +42,9 @@ export class Game extends Phaser.Scene {
         });
         this.load.image('pezzo', 'assets/pezzo.png');
         this.load.image('cuore', 'assets/cuore.png');
-        this.load.atlas('character', './assets/PersonaggioFoglioSprite.png', './assets/PersonaggioFoglio.json');
+        this.load.atlas('carattere', './assets/PersonaggioFoglioSprite.png', './assets/PersonaggioFoglio.json');
 
-        this.load.atlas('character', './assets/PersonaggioFoglioSprite.png','./assets/PersonaggioFoglio.json');
+        this.load.atlas('carattere', './assets/PersonaggioFoglioSprite.png','./assets/PersonaggioFoglio.json');
         this.load.spritesheet('trappola', 'assets/trappola_per_orsi.png', {
             frameWidth: 16,
             frameHeight: 16
@@ -54,8 +54,6 @@ export class Game extends Phaser.Scene {
     create() {
         this.camera = this.cameras.main;
         this.ostacolo = this.physics.add.group();
-
-        this.physics.world.createDebugGraphic();
         
         // background
         this.sfondo = this.add.tileSprite(0, 0, this.cameras.main.width, this.cameras.main.height, 'sfondo');
@@ -63,7 +61,7 @@ export class Game extends Phaser.Scene {
         this.sfondo.setAlpha(0.5);
 
         this.anims.create({
-            key: "trapclose",
+            key: "caratrappolaChiusa",
             frames: this.anims.generateFrameNumbers('trappola', {frames:[0, 1, 2, 3]}),
             frameRate: 8,
             repeat: 0
@@ -71,7 +69,7 @@ export class Game extends Phaser.Scene {
 
         this.anims.create({
             key: 'death',
-            frames: this.anims.generateFrameNames('character', { prefix: 'death', end: 4, zeroPad: 2 }),
+            frames: this.anims.generateFrameNames('carattere', { prefix: 'death', end: 4, zeroPad: 2 }),
             frameRate: 8,
         });
 
@@ -87,21 +85,14 @@ export class Game extends Phaser.Scene {
         this.suolo.setOrigin(0, 0);
         this.suolo.setScale(3);
 
-        this.Giocatore = this.physics.add.sprite(80, 200, 'character');
+        this.Giocatore = this.physics.add.sprite(80, 200, 'carattere');
         this.Giocatore.setCollideWorldBounds(true);
         this.physics.world.setBounds(0, 0, this.cameras.main.width, this.cameras.main.height - 155);
         this.Giocatore.setBounce(0.3);
         this.Giocatore.setGravityY(800);
         this.physics.add.existing(this.suolo, true); 
 
-        this.physics.world.createDebugGraphic();
-
-
-        this.physics.world.debugGraphic.visible = true;
-        this.physics.world.debugGraphic.lineStyle(1, 0x00ff00); // Green outlines for hitboxes
-
-
-        this.Giocatore = this.physics.add.sprite(80, 200, 'character');
+        this.Giocatore = this.physics.add.sprite(80, 200, 'carattere');
 
 
         this.physics.add.collider(this.Giocatore, this.suolo);
@@ -114,14 +105,14 @@ export class Game extends Phaser.Scene {
 
         this.anims.create({
             key: 'run',
-            frames: this.anims.generateFrameNames('character', { prefix: 'run', end: 4, zeroPad: 2 }),
+            frames: this.anims.generateFrameNames('carattere', { prefix: 'run', end: 4, zeroPad: 2 }),
             frameRate: 10,
             repeat: -1
         });
 
         this.anims.create({
             key: 'jump',
-            frames: this.anims.generateFrameNames('character', { prefix: 'jump', end: 3, zeroPad: 2 }),
+            frames: this.anims.generateFrameNames('carattere', { prefix: 'jump', end: 3, zeroPad: 2 }),
             frameRate: 10,
         });
 
@@ -223,7 +214,7 @@ export class Game extends Phaser.Scene {
         
         ostacolo.setData('hasCollided', true);
         
-        ostacolo.play("trapclose", true);
+        ostacolo.play("caratrappolaChiusa", true);
         
         ostacolo.once('animationcomplete', () => {
             ostacolo.destroy();
@@ -250,7 +241,6 @@ export class Game extends Phaser.Scene {
     update(delta: number) {
         if (this.cursori?.left?.isDown) {
             this.velocitaCorrente += 0.01;
-            console.log('Current speed: ' + this.velocitaCorrente);
         }
 
         Phaser.Actions.IncX(this.ostacolo.getChildren(), -this.velocitaCorrente * 3)
@@ -313,7 +303,6 @@ export class Game extends Phaser.Scene {
     }
 
     cambiaScena() {
-
         this.Giocatore.play('death', true);
 
         this.time.delayedCall(1000, () => {
