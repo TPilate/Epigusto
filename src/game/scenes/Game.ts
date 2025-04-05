@@ -43,8 +43,6 @@ export class Game extends Phaser.Scene {
         this.load.image('pezzo', 'assets/pezzo.png');
         this.load.image('cuore', 'assets/cuore.png');
         this.load.atlas('carattere', './assets/PersonaggioFoglioSprite.png', './assets/PersonaggioFoglio.json');
-
-        this.load.atlas('carattere', './assets/PersonaggioFoglioSprite.png','./assets/PersonaggioFoglio.json');
         this.load.spritesheet('trappola', 'assets/trappola_per_orsi.png', {
             frameWidth: 16,
             frameHeight: 16
