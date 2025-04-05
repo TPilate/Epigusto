@@ -1,6 +1,7 @@
 import * as Phaser from 'phaser';
 import { EventBus } from '../EventBus';
 import { Pezzo } from '../items/Pezzo';
+import { Coins } from '../items/Coins';
 
 export class Game extends Phaser.Scene {
     camera: Phaser.Cameras.Scene2D.Camera;
@@ -395,5 +396,17 @@ export class Game extends Phaser.Scene {
         this.testoPunteggio.setText('' + this.punteggio);
         
         (crate as Phaser.Physics.Arcade.Sprite).destroy();
+        const coinsBonus = new Coins({
+            currentSpeed: this.velocitaCorrente,
+            updateScore: this.punteggio
+        });
+        
+        const newScore = coinsBonus.start();
+        
+        this.punteggio = newScore;
+        this.punteggioTarget = newScore;
+        this.testoPunteggio.setText('' + this.punteggio);
+        
+        crate.destroy();
     }
 }
