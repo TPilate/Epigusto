@@ -21,7 +21,7 @@ export class Game extends Phaser.Scene {
         this.velocitaCorrente = 0.5;
         this.velocitaMassima = 5.0;
         this.intervalloIncremento = 5000;
-        this.vita = 10;
+        this.vita = 1;
     }
 
     preload() {
@@ -129,9 +129,17 @@ export class Game extends Phaser.Scene {
     }
 
     aumentaVita() {
+        if (this.vita >= 10) {
+            // Ensure display shows infinity
+            this.testoVita.setText('∞');
+            this.testoVita.setPosition(this.cameras.main.width - 80, 8);
+            return;
+        }
+        
         this.vita += 1;
         this.testoVita.setText('' + this.vita);
-        if (this.vita > 10) {
+        
+        if (this.vita == 10) {
             this.testoVita.setText('∞');
             this.testoVita.setPosition(this.cameras.main.width - 80, 8);
         }
