@@ -63,10 +63,6 @@ export class Game extends Phaser.Scene {
         this.nomeUtente = localStorage.getItem("playerName") || "";
         this.camera = this.cameras.main;
         this.ostacolo = this.physics.add.group();
-        
-
-        this.physics.world.createDebugGraphic();
-
         this.sfondo = this.add.tileSprite(0, 0, this.cameras.main.width, this.cameras.main.height, 'sfondo');
         this.sfondo.setOrigin(0, 0);
         this.sfondo.setAlpha(0.5);
