@@ -14,6 +14,7 @@ export class Game extends Phaser.Scene {
     testoPunteggio: Phaser.GameObjects.Text;
     vita: number;
     testoVita: Phaser.GameObjects.Text;
+    crates: Phaser.Physics.Arcade.Group;
     private velocitaMassima: number;
     private intervalloIncremento: number;
     private punteggioTarget: number;
@@ -40,6 +41,7 @@ export class Game extends Phaser.Scene {
         this.load.image('pezzo', 'assets/pezzo.png');
         this.load.image('cuore', 'assets/cuore.png');
         this.load.atlas('character', './assets/PersonaggioFoglioSprite.png', './assets/PersonaggioFoglio.json');
+        this.load.image('crate', 'assets/cassa.png');
     }
 
     create() {
@@ -143,6 +145,18 @@ export class Game extends Phaser.Scene {
             loop: true
         });
 
+        this.crates = this.physics.add.group();
+
+        this.time.addEvent({
+            delay: 5000,
+            callback: this.generaCassa,
+            callbackScope: this,
+            loop: true
+        });
+
+        this.generaCassa();
+
+
         EventBus.emit('current-scene-ready', this);
     }
 
@@ -172,6 +186,8 @@ export class Game extends Phaser.Scene {
                 this.Giocatore.play('run', true);
             }
         }
+
+        this.aggiornareCasse();
 
     }
 
@@ -214,5 +230,27 @@ export class Game extends Phaser.Scene {
         if (this.velocitaCorrente > this.velocitaMassima) {
             this.velocitaCorrente = this.velocitaMassima;
         }
+    }
+
+    private generaCassa(): void {
+        const y = Phaser.Math.Between(this.cameras.main.height - 450, this.cameras.main.height - 400);
+        const crate = this.crates.create(this.cameras.main.width + 100, y, 'crate');
+        crate.setOrigin(0, 0);
+        crate.setScale(3);
+
+        crate.setImmovable(true);
+        crate.body.allowGravity = false;
+    }
+
+    private aggiornareCasse(): void {
+        this.crates.getChildren().forEach((child) => {
+            const crate = child as Phaser.Physics.Arcade.Sprite;
+
+            crate.x -= this.velocitaCorrente * 3;
+
+            if (crate.x < -crate.displayWidth) {
+                crate.destroy();
+            }
+        });
     }
 }
