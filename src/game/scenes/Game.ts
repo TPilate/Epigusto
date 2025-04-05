@@ -220,9 +220,9 @@ export class Game extends Phaser.Scene {
     }
 
     luogoOstacolo() {
-        const ostacoloNum = Math.floor(Math.random() * 7) + 1;
-        
-        if (ostacoloNum > 6) {
+        const ostacoloNum = Math.floor(Math.random() * 7 ) + 1;
+
+        if (ostacoloNum > 6 && ostacoloNum < 8) {
             const trappola = this.physics.add.sprite(
                 this.cameras.main.width, 
                 this.cameras.main.height - 60, 
@@ -278,9 +278,11 @@ export class Game extends Phaser.Scene {
 
         Phaser.Actions.IncX(this.ostacolo.getChildren(), -this.velocitaCorrente * 3)
 
-        this.tempoDiRigenerazione += delta * this.velocitaCorrente * 0.08 / 10;
-        if (this.tempoDiRigenerazione >= 1500) {
-          this.luogoOstacolo();
+        this.tempoDiRigenerazione += delta * this.velocitaCorrente * 0.05 / 10; 
+        if (this.tempoDiRigenerazione >= 2000) {
+          if (Math.random() < 0.6) { 
+            this.luogoOstacolo();
+          }
           this.tempoDiRigenerazione = 0;
         }
 
