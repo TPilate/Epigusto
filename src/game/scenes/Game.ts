@@ -8,8 +8,8 @@ export class Game extends Phaser.Scene {
     suolo: Phaser.GameObjects.TileSprite;
     velocitaCorrente: number;
     cursori: Phaser.Types.Input.Keyboard.CursorKeys;
-    player: Phaser.Physics.Arcade.Sprite;
-    keys: any;
+    Giocatore: Phaser.Physics.Arcade.Sprite;
+    kya: any;
 
     constructor() {
         super('Game');
@@ -43,11 +43,11 @@ export class Game extends Phaser.Scene {
         );
         this.suolo.setOrigin(0, 0);
         this.suolo.setScale(3);
-        this.player = this.physics.add.sprite(80, 200, 'character');
-        this.player.setCollideWorldBounds(true);
+        this.Giocatore = this.physics.add.sprite(80, 200, 'character');
+        this.Giocatore.setCollideWorldBounds(true);
         this.physics.world.setBounds(0, 0, this.cameras.main.width, this.cameras.main.height - 155);
-        this.player.setBounce(0.3);
-        this.player.setGravityY(800);
+        this.Giocatore.setBounce(0.3);
+        this.Giocatore.setGravityY(800);
 
         this.anims.create({
             key: 'run',
@@ -66,32 +66,29 @@ export class Game extends Phaser.Scene {
 
         this.cursori = this.input.keyboard?.createCursorKeys() || {} as Phaser.Types.Input.Keyboard.CursorKeys;
 
-        this.keys = this.input.keyboard?.addKeys({
+        this.kya = this.input.keyboard?.addKeys({
             z: Phaser.Input.Keyboard.KeyCodes.Z,
             spaceBar: Phaser.Input.Keyboard.KeyCodes.SPACE,
         });
         
-        this.player.play('run');   
+        this.Giocatore.play('run');   
 
         EventBus.emit('current-scene-ready', this);
     }
 
     update() {
-        // Update background and ground positions
         this.sfondo.tilePositionX += this.velocitaCorrente;
         this.suolo.tilePositionX += this.velocitaCorrente;
         
       
         
-        // Handle jump with space key
-        if (this.keys?.spaceBar?.isDown) {
-            this.player.setVelocityY(-600);
-            this.player.play('jump', true);
+        if (this.kya?.spaceBar?.isDown) {
+            this.Giocatore.setVelocityY(-600);
+            this.Giocatore.play('jump', true);
         }
         
-        // Return to running animation when back on ground
         if (!this.cursori.space.isDown) {
-            this.player.play('run', true);
+            this.Giocatore.play('run', true);
         }
     }
 
