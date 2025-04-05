@@ -397,11 +397,11 @@ export class Game extends Phaser.Scene {
         
         (crate as Phaser.Physics.Arcade.Sprite).destroy();
         const coinsBonus = new Coins({
-            currentSpeed: this.velocitaCorrente,
-            updateScore: this.punteggio
+            velocitaAttuale: this.velocitaCorrente,
+            aggiornaPunteggio: this.punteggio
         });
         
-        const newScore = coinsBonus.start();
+        const newScore = coinsBonus.inizia();
         
         this.punteggio = newScore;
         this.punteggioTarget = newScore;

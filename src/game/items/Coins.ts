@@ -1,20 +1,20 @@
 import Phaser from "phaser";
-export interface CoinsConfig {
-    currentSpeed: number;
-    updateScore: number;
+export interface PezzoConfigurazione {
+    velocitaAttuale: number;
+    aggiornaPunteggio: number;
 }
 
-export class Coins {
-    private currentSpeed: number;
-    private updateScore: number;
+export class Pezzo {
+    private velocitaAttuale: number;
+    private aggiornaPunteggio: number;
 
-    constructor(config: CoinsConfig) {
-        this.currentSpeed = config.currentSpeed;
-        this.updateScore = config.updateScore;
+    constructor(config: PezzoConfigurazione) {
+        this.velocitaAttuale = config.velocitaAttuale;
+        this.aggiornaPunteggio = config.aggiornaPunteggio;
     }
 
-    start() {
-        this.updateScore += 100 * this.currentSpeed;
-        return this.updateScore;
+    inizia() {
+        this.aggiornaPunteggio += 100 * this.velocitaAttuale;
+        return this.aggiornaPunteggio;
     }
 }
