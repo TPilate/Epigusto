@@ -122,13 +122,14 @@ export class Game extends Phaser.Scene {
             frameRate: 10,
         });
 
-        this.add.image(15, 5, 'pezzo').setOrigin(0, 0).setScale(0.1);
+        // Score UI
+        this.add.image(15, 5, 'pezzo').setOrigin(0, 0).setScale(0.15);
         this.testoPunteggio = this.add.text(
-            65,
-            18,
+            90,
+            15,
             '0', {
             fontFamily: 'minecraft',
-            fontSize: '24px',
+            fontSize: '52px',
             color: '#fff'
         });
         this.testoPunteggio.setScrollFactor(0);

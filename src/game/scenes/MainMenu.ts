@@ -64,6 +64,9 @@ export class MainMenu extends Scene
         this.pulsanteInvio.style.height = `${Math.round(300 * rapportoProporzioniPulsante)}px`;
 
         this.pulsanteInvio.addEventListener('click', (e) => {
+            if (!this.inputNome.value.trim()) {
+                return;
+            }
             e.preventDefault();
             this.salvaNomeGiocatore();
             this.rimuoviElementiInput();
