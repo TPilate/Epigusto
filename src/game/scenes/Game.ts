@@ -17,16 +17,15 @@ export class Game extends Phaser.Scene {
             frameWidth: 80,
             frameHeight: 150
         });
-        this.load.image('background', './assets/sfondo.png');
-
     }
 
     create() {
         this.background = this.add.image(512, 384, 'background');
         this.background.setAlpha(0.5);
         this.player = this.physics.add.sprite(500, 750, 'player');
-
         this.camera = this.cameras.main;
+
+
 
         this.anims.create({
             key: 'walk',
