@@ -3,6 +3,7 @@ import { EventBus } from '../EventBus';
 import { Pezzo } from '../items/Pezzo';
 import { Cuore } from '../items/Cuore';
 import { Coniglio } from '../items/Coniglio';
+import { Tartaruga } from '../items/Tartaruga';
 
 export class Game extends Phaser.Scene {
     camera: Phaser.Cameras.Scene2D.Camera;
@@ -221,9 +222,9 @@ export class Game extends Phaser.Scene {
     }
 
     luogoOstacolo() {
-        const ostacoloNum = Math.floor(Math.random() * 7) + 1;
-        
-        if (ostacoloNum > 6) {
+        const ostacoloNum = Math.floor(Math.random() * 7 ) + 1;
+
+        if (ostacoloNum > 6 && ostacoloNum < 8) {
             const trappola = this.physics.add.sprite(
                 this.cameras.main.width, 
                 this.cameras.main.height - 60, 
@@ -279,9 +280,11 @@ export class Game extends Phaser.Scene {
 
         Phaser.Actions.IncX(this.ostacolo.getChildren(), -this.velocitaCorrente * 3)
 
-        this.tempoDiRigenerazione += delta * this.velocitaCorrente * 0.08 / 10;
-        if (this.tempoDiRigenerazione >= 1500) {
-          this.luogoOstacolo();
+        this.tempoDiRigenerazione += delta * this.velocitaCorrente * 0.05 / 10; 
+        if (this.tempoDiRigenerazione >= 2000) {
+          if (Math.random() < 0.6) { 
+            this.luogoOstacolo();
+          }
           this.tempoDiRigenerazione = 0;
         }
 
@@ -408,6 +411,21 @@ export class Game extends Phaser.Scene {
         }, [], this);
 
 
+        const TartarugaBonus = new Tartaruga({
+            velocitaAttuale: this.velocitaCorrente,
+        })
+
+        const velocitaPrecedente = this.velocitaCorrente
+        const nuovoVelocita = TartarugaBonus.inizia()
+
+        this.velocitaCorrente = nuovoVelocita
+
+        if (this.velocitaCorrente !== velocitaPrecedente) {
+            this.time.delayedCall(10000, () => {
+                this.velocitaCorrente = velocitaPrecedente;
+            }, [], this);
+        }
+        
         crate.destroy();
     }
 }
