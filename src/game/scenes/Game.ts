@@ -1,6 +1,6 @@
 import * as Phaser from 'phaser';
 import { EventBus } from '../EventBus';
-import { Coins } from '../items/Coins';
+import { Pezzo } from '../items/Pezzo';
 
 export class Game extends Phaser.Scene {
     camera: Phaser.Cameras.Scene2D.Camera;
@@ -384,15 +384,15 @@ export class Game extends Phaser.Scene {
     }
 
     private suPlayerCrateCollision(player: Phaser.GameObjects.GameObject, crate: Phaser.GameObjects.GameObject): void {
-        const coinsBonus = new Coins({
+        const PezzoBonus = new Pezzo({
             velocitaAttuale: this.velocitaCorrente,
             aggiornaPunteggio: this.punteggio
         });
         
-        const newScore = coinsBonus.inizia();
+        const nuovoCore = PezzoBonus.inizia();
         
-        this.punteggio = newScore;
-        this.punteggioTarget = newScore;
+        this.punteggio = nuovoCore;
+        this.punteggioTarget = nuovoCore;
         this.testoPunteggio.setText('' + this.punteggio);
         
         crate.destroy();
