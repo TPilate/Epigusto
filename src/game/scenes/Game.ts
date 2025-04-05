@@ -1,6 +1,7 @@
 import * as Phaser from 'phaser';
 import { EventBus } from '../EventBus';
 import { Pezzo } from '../items/Pezzo';
+import { Cuore } from '../items/Cuore';
 
 export class Game extends Phaser.Scene {
     camera: Phaser.Cameras.Scene2D.Camera;
@@ -142,13 +143,6 @@ export class Game extends Phaser.Scene {
             color: '#fff'
         });
         this.testoVita.setScrollFactor(0);
-
-        this.time.addEvent({
-            delay: 1000,
-            callback: this.aumentaVita,
-            callbackScope: this,
-            loop: true
-        });
 
         this.cursori = this.input.keyboard?.createCursorKeys() || {} as Phaser.Types.Input.Keyboard.CursorKeys;
 
@@ -332,17 +326,6 @@ export class Game extends Phaser.Scene {
         }
     }
 
-    aumentaVita() {
-        if (this.vita >= 10) {
-            this.testoVita.setText('∞');
-            this.testoVita.setPosition(this.cameras.main.width - 80, 8);
-            return;
-        }
-
-        this.vita += 1;
-        this.testoVita.setText('' + this.vita);
-    }
-
     cambiaScena() {
         this.Giocatore.play('death', true);
 
@@ -395,5 +378,23 @@ export class Game extends Phaser.Scene {
         this.testoPunteggio.setText('' + this.punteggio);
         
         (crate as Phaser.Physics.Arcade.Sprite).destroy();
+
+        const cuoreBonus = new Cuore({
+            cuore: this.vita
+        })
+        
+        const nuovoVita = cuoreBonus.inizia()
+        
+        this.vita = nuovoVita;
+
+        if (this.vita >= 10) {
+            this.vita = 9999
+            this.testoVita.setText('∞');
+            this.testoVita.setPosition(this.cameras.main.width - 80, 8);
+        } else {
+            this.testoVita.setText('' + this.vita);
+        }
+        
+        crate.destroy();
     }
 }
