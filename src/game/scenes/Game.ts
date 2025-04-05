@@ -11,11 +11,17 @@ export class Game extends Scene {
     score: number;
     scoreText: Phaser.GameObjects.Text;
 
+    private velocitaMassima: number;
+    private intervalloIncremento: number;
+
+
 
     constructor() {
         super('Game');
         this.velocitaCorrente = 0.5;
         this.score = 0;
+        this.velocitaMassima = 5.0;
+        this.intervalloIncremento = 5000;
     }
 
     preload() {
@@ -66,16 +72,18 @@ export class Game extends Scene {
         });
 
         this.cursori = this.input.keyboard.createCursorKeys();
+        
+        this.time.addEvent({
+            delay: this.intervalloIncremento,
+            callback: this.aumentareVelocita,
+            callbackScope: this,
+            loop: true
+        });
 
         EventBus.emit('current-scene-ready', this);
     }
 
     update() {
-        if (this.cursori.left.isDown) {
-            this.velocitaCorrente += 0.01;
-            console.log('Current speed: ' + this.velocitaCorrente);
-        }
-
         this.sfondo.tilePositionX += this.velocitaCorrente;
         this.suolo.tilePositionX += this.velocitaCorrente;
     }
@@ -87,5 +95,15 @@ export class Game extends Scene {
 
     cambiaScena() {
         this.scene.start('GameOver');
+    }
+
+    private aumentareVelocita(): void {
+        const valoreIncremento = 0.2;
+        
+        this.velocitaCorrente += valoreIncremento;
+        
+        if (this.velocitaCorrente > this.velocitaMassima) {
+            this.velocitaCorrente = this.velocitaMassima;
+        }
     }
 }
