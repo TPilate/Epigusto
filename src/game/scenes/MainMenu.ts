@@ -12,6 +12,7 @@ export class MainMenu extends Scene
     nameInputContainer: HTMLDivElement;
     submitButton: HTMLButtonElement;
     playerName: string = '';
+    handleKeyPress: (e: KeyboardEvent) => void;
 
     constructor ()
     {
@@ -38,71 +39,18 @@ export class MainMenu extends Scene
     createNameInput() {
         this.nameFormContainer = document.createElement("form")
         this.nameInputContainer = document.createElement('div');
-        this.nameInputContainer.style.position = 'absolute';
-        this.nameInputContainer.style.top = '450px';
-        this.nameInputContainer.style.left = '47%';
-        this.nameInputContainer.style.right = '50%';
-        this.nameInputContainer.style.transform = 'translateX(-50%)';
-        this.nameInputContainer.style.zIndex = '1000';
-        this.nameInputContainer.style.display = 'flex';
-        this.nameInputContainer.style.flexDirection = 'column';
-        this.nameInputContainer.style.gap = '10px';
-        this.nameInputContainer.style.alignItems = 'center';
+        this.nameInputContainer.classList.add("name-input-container")
         
         this.nameInput = document.createElement('input');
+        this.nameInput.autocomplete = "off"
         this.nameInput.required = true
         this.nameInput.type = 'text';
         this.nameInput.placeholder = 'Enter your name';
-        this.nameInput.style.padding = '36px';
-        this.nameInput.style.borderRadius = '4px';
-        this.nameInput.style.border = '2px solid transparent';
-        this.nameInput.style.backgroundImage = "url('./assets/immissione_del_nome.png')";
-        this.nameInput.style.backgroundSize = '100% 100%';
-        this.nameInput.style.backgroundRepeat = 'no-repeat';
-        this.nameInput.style.backgroundColor = 'transparent';
-        this.nameInput.style.color = 'white';
-        this.nameInput.style.fontWeight = 'bold';
-        this.nameInput.style.fontSize = '32px';
-        this.nameInput.style.paddingBottom = "50px"
-        this.nameInput.style.textAlign = 'center';
         this.nameInput.id = 'player-name-input';
-        const styleId = 'player-name-placeholder-style';
-        if (!document.getElementById(styleId)) {
-            const style = document.createElement('style');
-            style.id = styleId;
-            style.textContent = `
-                #player-name-input::placeholder {
-                    color: white;
-                    opacity: 1;
-                }
-                #player-name-input::-webkit-input-placeholder {
-                    color: white;
-                }
-                #player-name-input:-ms-input-placeholder {
-                    color: white;
-                }
-                #player-name-input::-moz-placeholder {
-                    color: white;
-                    opacity: 1;
-                }
-            `;
-            document.head.appendChild(style);
-        }
         
         this.submitButton = document.createElement('button');
         this.submitButton.textContent = 'Start Game';
-        this.submitButton.style.padding = '8px 16px';
-        this.submitButton.style.border = 'none';
-        this.submitButton.style.borderRadius = '4px';
-        this.submitButton.style.cursor = 'pointer';
-        this.submitButton.style.backgroundImage = "url('./assets/pulsante_di_avvio.png')";
-        this.submitButton.style.backgroundSize = '100% 100%';
-        this.submitButton.style.backgroundRepeat = 'no-repeat';
-        this.submitButton.style.backgroundColor = 'transparent';
-        this.submitButton.style.color = 'white';
-        this.submitButton.style.fontWeight = 'bold';
-        this.submitButton.style.textShadow = '1px 1px 2px black';
-        this.submitButton.style.fontSize = "32px"
+        this.submitButton.classList.add("submit-button")
         
         const inputTexture = this.textures.get('input-bg');
         const buttonTexture = this.textures.get('button-bg');
@@ -115,12 +63,20 @@ export class MainMenu extends Scene
         this.submitButton.style.width = `300px`;
         this.submitButton.style.height = `${Math.round(300 * buttonAspectRatio)}px`;
 
-        this.submitButton.addEventListener('click', () => this.savePlayerName());
-        this.nameInput.addEventListener('keypress', (e) => {
+        this.submitButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.savePlayerName();
+            this.removeInputElements();
+            this.changeScene();
+        this.handleKeyPress = (e: KeyboardEvent) => {
             if (e.key === 'Enter') {
+                e.preventDefault();
                 this.savePlayerName();
-                this.changeScene()
+                this.removeInputElements();
+                this.changeScene();
             }
+        };
+        this.nameInput.addEventListener('keypress', this.handleKeyPress);
         });
         
         this.nameInputContainer.appendChild(this.nameInput);
@@ -151,8 +107,17 @@ export class MainMenu extends Scene
     }
 
     handleShutdown() {
-        if (this.nameInputContainer && this.nameInputContainer.parentNode) {
-            this.nameInputContainer.parentNode.removeChild(this.nameInputContainer);
+        if (this.nameFormContainer && this.nameFormContainer.parentNode) {
+            this.nameFormContainer.parentNode.removeChild(this.nameFormContainer);
+        }
+    }
+
+    removeInputElements() {
+        if (this.nameFormContainer && this.nameFormContainer.parentNode) {
+            this.submitButton.removeEventListener('click', this.savePlayerName);
+            this.nameInput.removeEventListener('keypress', this.handleKeyPress);
+            
+            this.nameFormContainer.parentNode.removeChild(this.nameFormContainer);
         }
     }
     
@@ -163,7 +128,9 @@ export class MainMenu extends Scene
             this.logoTween.stop();
             this.logoTween = null;
         }
-
+        
+        this.removeInputElements();
+        
         this.scene.start('Game');
     }
 
