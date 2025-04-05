@@ -9,6 +9,7 @@ export class Game extends Phaser.Scene {
     velocitaCorrente: number;
     cursori: Phaser.Types.Input.Keyboard.CursorKeys;
     player: Phaser.Physics.Arcade.Sprite;
+    keys: any;
 
     constructor() {
         super('Game');
@@ -56,13 +57,19 @@ export class Game extends Phaser.Scene {
         });
 
         this.anims.create({
-            key: 'run',
-            frames: this.anims.generateFrameNames('character', { prefix: 'jump', end: 4, zeroPad: 2 }),
-            frameRate: 10,
+            key: 'jump',
+            frames: this.anims.generateFrameNames('character', { prefix: 'jump', end: 3, zeroPad: 2 }),
+            frameRate: 20,
             repeat: 0
         });
 
 
+        this.cursori = this.input.keyboard?.createCursorKeys() || {} as Phaser.Types.Input.Keyboard.CursorKeys;
+
+        this.keys = this.input.keyboard?.addKeys({
+            z: Phaser.Input.Keyboard.KeyCodes.Z,
+            spaceBar: Phaser.Input.Keyboard.KeyCodes.SPACE,
+        });
         
         this.player.play('run');   
 
@@ -70,9 +77,22 @@ export class Game extends Phaser.Scene {
     }
 
     update() {
+        // Update background and ground positions
         this.sfondo.tilePositionX += this.velocitaCorrente;
         this.suolo.tilePositionX += this.velocitaCorrente;
-       
+        
+      
+        
+        // Handle jump with space key
+        if (this.keys?.spaceBar?.isDown) {
+            this.player.setVelocityY(-600);
+            this.player.play('jump', true);
+        }
+        
+        // Return to running animation when back on ground
+        if (!this.cursori.space.isDown) {
+            this.player.play('run', true);
+        }
     }
 
     cambiaScena() {
