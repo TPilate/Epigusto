@@ -2,6 +2,7 @@ import * as Phaser from 'phaser';
 import { EventBus } from '../EventBus';
 import { Pezzo } from '../items/Pezzo';
 import { Cuore } from '../items/Cuore';
+import { Coniglio } from '../items/Coniglio';
 
 export class Game extends Phaser.Scene {
     camera: Phaser.Cameras.Scene2D.Camera;
@@ -35,7 +36,7 @@ export class Game extends Phaser.Scene {
         this.incrementoPunteggio = 2;
         this.velocitaMassima = 5.0;
         this.intervalloIncremento = 5000;
-        this.vita = 0;
+        this.vita = 100;
         this.tempoDiRigenerazione = 0
     }
 
@@ -394,7 +395,19 @@ export class Game extends Phaser.Scene {
         } else {
             this.testoVita.setText('' + this.vita);
         }
-        
+
+        const coniglioInstance = new Coniglio({
+            giocoVelocita: this.velocitaCorrente
+        });
+
+        const velocitaOriginale = this.velocitaCorrente;
+        this.velocitaCorrente = coniglioInstance.inizia();
+
+        this.time.delayedCall(5000, () => {
+            this.velocitaCorrente = velocitaOriginale;
+        }, [], this);
+
+
         crate.destroy();
     }
 }
