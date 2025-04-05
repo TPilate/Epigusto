@@ -191,7 +191,7 @@ export class Game extends Phaser.Scene {
         });
         this.cursori = this?.input?.keyboard?.createCursorKeys();
 
-        this.initCollider()
+        this.initCollisione()
         EventBus.emit('current-scene-ready', this);
     }
 
@@ -238,7 +238,7 @@ export class Game extends Phaser.Scene {
             });
         }
     }
-    initCollider() {
+    initCollisione() {
         this.physics.add.overlap(
             this.ostacolo, 
             this.Giocatore, 
