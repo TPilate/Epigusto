@@ -1,5 +1,6 @@
 import * as Phaser from 'phaser';
 import { EventBus } from '../EventBus';
+import { Pezzo } from '../items/Pezzo';
 
 export class Game extends Phaser.Scene {
     camera: Phaser.Cameras.Scene2D.Camera;
@@ -381,8 +382,18 @@ export class Game extends Phaser.Scene {
         });
     }
 
-    suPlayerCrateCollision(_: Phaser.GameObjects.GameObject | Phaser.Tilemaps.Tile, crate: Phaser.GameObjects.GameObject | Phaser.Tilemaps.Tile): void {
-        // ADD logic for bonus
+    private suPlayerCrateCollision(player: Phaser.GameObjects.GameObject, crate: Phaser.GameObjects.GameObject): void {
+        const PezzoBonus = new Pezzo({
+            velocitaAttuale: this.velocitaCorrente,
+            aggiornaPunteggio: this.punteggio
+        });
+        
+        const nuovoCore = PezzoBonus.inizia();
+        
+        this.punteggio = nuovoCore;
+        this.punteggioTarget = nuovoCore;
+        this.testoPunteggio.setText('' + this.punteggio);
+        
         (crate as Phaser.Physics.Arcade.Sprite).destroy();
     }
 }
