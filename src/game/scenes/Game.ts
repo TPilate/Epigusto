@@ -19,7 +19,6 @@ export class Game extends Phaser.Scene {
     private punteggioTarget: number;
     private incrementoPunteggio: number;
     private timerIncrementoPunteggio: Phaser.Time.TimerEvent;
-    trappola: Phaser.GameObjects.Sprite;
     obsticles: Phaser.Physics.Arcade.Group;
     respawnTime: number;
 
@@ -56,6 +55,8 @@ export class Game extends Phaser.Scene {
     create() {
         this.camera = this.cameras.main;
         this.obsticles = this.physics.add.group();
+
+        this.physics.world.createDebugGraphic();
         
         // background
         this.sfondo = this.add.tileSprite(0, 0, this.cameras.main.width, this.cameras.main.height, 'sfondo');
@@ -65,7 +66,14 @@ export class Game extends Phaser.Scene {
         this.anims.create({
             key: "trapclose",
             frames: this.anims.generateFrameNumbers('trappola', {frames:[0, 1, 2, 3]}),
-            frameRate: 16
+            frameRate: 8,
+            repeat: 0
+        });
+
+        this.anims.create({
+            key: 'death',
+            frames: this.anims.generateFrameNames('character', { prefix: 'death', end: 4, zeroPad: 2 }),
+            frameRate: 8,
         });
 
         // ground
@@ -83,6 +91,25 @@ export class Game extends Phaser.Scene {
         this.Giocatore = this.physics.add.sprite(80, 200, 'character');
         this.Giocatore.setCollideWorldBounds(true);
         this.physics.world.setBounds(0, 0, this.cameras.main.width, this.cameras.main.height - 155);
+        this.Giocatore.setBounce(0.3);
+        this.Giocatore.setGravityY(800);
+        this.physics.add.existing(this.suolo, true); 
+
+        this.physics.world.createDebugGraphic();
+
+
+        this.physics.world.debugGraphic.visible = true;
+        this.physics.world.debugGraphic.lineStyle(1, 0x00ff00); // Green outlines for hitboxes
+
+
+        this.Giocatore = this.physics.add.sprite(80, 200, 'character');
+
+
+        this.physics.add.collider(this.Giocatore, this.suolo);
+        this.Giocatore.setSize(62, 120);
+        this.Giocatore.setOffset(16, 16);
+        this.Giocatore.setCollideWorldBounds(true);
+        this.physics.world.setBounds(0, 0, this.cameras.main.width, this.cameras.main.height);
         this.Giocatore.setBounce(0.3);
         this.Giocatore.setGravityY(800);
 
@@ -165,28 +192,62 @@ export class Game extends Phaser.Scene {
         });
         this.cursori = this?.input?.keyboard?.createCursorKeys();
 
+        this.initCollider()
         EventBus.emit('current-scene-ready', this);
     }
 
-    placeObsticle() {
-        const obsticleNum = Math.floor(Math.random() * 7) + 1;
-
-        const trap = this.physics.add.sprite(
-            this.cameras.main.width, 
-            this.cameras.main.height - 60, 
-            'trappola'
-        );
+    luogoOstacolo() {
+        const ostacoloNum = Math.floor(Math.random() * 7) + 1;
         
-        trap.setFrame(0);
-        
-        if (obsticleNum > 6) {
-            this.obsticles.add(trap);
-            trap.setScale(4);
-            trap.setImmovable(true);
-            trap.body.setAllowGravity(false);
+        if (ostacoloNum > 6) {
+            const trappola = this.physics.add.sprite(
+                this.cameras.main.width, 
+                this.cameras.main.height - 60, 
+                'trappola'
+            );
+            
+            trappola.setFrame(0);
+            this.obsticles.add(trappola);
+            trappola.setScale(4);
+            trappola.setImmovable(true);
+            trappola.body.setAllowGravity(false);
+            trappola.setData('hasCollided', false);
+        } else {
+            return
         }
     }
 
+    trappolaCollisione(ostacolo: Phaser.Physics.Arcade.Sprite) {
+        if (ostacolo.getData('hasCollided')) {
+            return;
+        }
+        
+        ostacolo.setData('hasCollided', true);
+        
+        ostacolo.play("trapclose", true);
+        
+        ostacolo.once('animationcomplete', () => {
+            ostacolo.destroy();
+        });
+        
+        this.vita -= 1;
+        this.testoVita.setText('' + this.vita);
+        
+        if (this.vita <= 0) {
+            this.time.delayedCall(500, () => {
+                this.cambiaScena();
+            });
+        }
+    }
+    initCollider() {
+        this.physics.add.overlap(
+            this.obsticles, 
+            this.Giocatore, 
+            (player, ostacolo) => {
+                this.trappolaCollisione(ostacolo as Phaser.Physics.Arcade.Sprite);
+            }
+        );
+    }
     update(delta: number) {
         if (this.cursori?.left?.isDown) {
             this.velocitaCorrente += 0.01;
@@ -194,11 +255,10 @@ export class Game extends Phaser.Scene {
         }
 
         Phaser.Actions.IncX(this.obsticles.getChildren(), -this.velocitaCorrente * 3)
-        // console.log(delta)
 
         this.respawnTime += delta * this.velocitaCorrente * 0.08 / 10;
         if (this.respawnTime >= 1500) {
-          this.placeObsticle();
+          this.luogoOstacolo();
           this.respawnTime = 0;
         }
 
@@ -208,7 +268,7 @@ export class Game extends Phaser.Scene {
 
         const ilGiocatoreSulTerreno = this.Giocatore.body ? (this.Giocatore.body.touching.down || this.Giocatore.body.blocked.down) : false;
         if ((this.kya?.spaceBar?.isDown || this.cursori?.space?.isDown) && ilGiocatoreSulTerreno) {
-            this.Giocatore.setVelocityY(-800);
+            this.Giocatore.setVelocityY(-600);
             this.Giocatore.play('jump', true);
             // Add a 1-second delay before playing run animation
             this.time.delayedCall(500, () => {
@@ -254,7 +314,12 @@ export class Game extends Phaser.Scene {
     }
 
     cambiaScena() {
-        this.scene.start('GameOver');
+
+        this.Giocatore.play('death', true);
+
+        this.time.delayedCall(1000, () => {
+            this.scene.start('GameOver');
+        });
     }
 
     private aumentareVelocita(): void {
