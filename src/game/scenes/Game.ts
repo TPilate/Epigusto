@@ -146,6 +146,7 @@ export class Game extends Phaser.Scene {
         this.kya = this.input.keyboard?.addKeys({
             z: Phaser.Input.Keyboard.KeyCodes.Z,
             spaceBar: Phaser.Input.Keyboard.KeyCodes.SPACE,
+            w: Phaser.Input.Keyboard.KeyCodes.W
         });
 
         this.Giocatore.play('run');
@@ -250,7 +251,7 @@ export class Game extends Phaser.Scene {
 
 
         const ilGiocatoreSulTerreno = this.Giocatore.body ? (this.Giocatore.body.touching.down || this.Giocatore.body.blocked.down) : false;
-        if ((this.kya?.spaceBar?.isDown || this.cursori?.space?.isDown) && ilGiocatoreSulTerreno) {
+        if ((this.kya?.spaceBar?.isDown || this.cursori?.space?.isDown || this.kya?.z?.isDown || this.kya?.w?.isDown || this.cursori?.up.isDown) && ilGiocatoreSulTerreno) {
             this.Giocatore.setVelocityY(-600);
             this.Giocatore.play('jump', true);
             // Add a 1-second delay before playing run animation
