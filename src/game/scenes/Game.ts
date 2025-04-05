@@ -7,7 +7,7 @@ export class Game extends Phaser.Scene {
     testoGioco: Phaser.GameObjects.Text;
     suolo: Phaser.GameObjects.TileSprite;
     velocitaCorrente: number;
-    cursori: Phaser.Types.Input.Keyboard.CursorKeys;
+    cursori: Phaser.Types.Input.Keyboard.CursorKeys | undefined;
     Giocatore: Phaser.Physics.Arcade.Sprite;
     kya: any;
     punteggio: number;
@@ -19,6 +19,10 @@ export class Game extends Phaser.Scene {
     private punteggioTarget: number;
     private incrementoPunteggio: number;
     private timerIncrementoPunteggio: Phaser.Time.TimerEvent;
+    trappola: Phaser.GameObjects.Sprite;
+    obsticles: Phaser.Physics.Arcade.Group;
+    respawnTime: number;
+
 
     constructor() {
         super('Game');
@@ -29,6 +33,7 @@ export class Game extends Phaser.Scene {
         this.velocitaMassima = 5.0;
         this.intervalloIncremento = 5000;
         this.vita = 0;
+        this.respawnTime = 0
     }
 
     preload() {
@@ -40,15 +45,30 @@ export class Game extends Phaser.Scene {
         this.load.image('pezzo', 'assets/pezzo.png');
         this.load.image('cuore', 'assets/cuore.png');
         this.load.atlas('character', './assets/PersonaggioFoglioSprite.png', './assets/PersonaggioFoglio.json');
+
+        this.load.atlas('character', './assets/PersonaggioFoglioSprite.png','./assets/PersonaggioFoglio.json');
+        this.load.spritesheet('trappola', 'assets/trappola_per_orsi.png', {
+            frameWidth: 16,
+            frameHeight: 16
+        });
     }
 
     create() {
         this.camera = this.cameras.main;
-
+        this.obsticles = this.physics.add.group();
+        
+        // background
         this.sfondo = this.add.tileSprite(0, 0, this.cameras.main.width, this.cameras.main.height, 'sfondo');
         this.sfondo.setOrigin(0, 0);
         this.sfondo.setAlpha(0.5);
 
+        this.anims.create({
+            key: "trapclose",
+            frames: this.anims.generateFrameNumbers('trappola', {frames:[0, 1, 2, 3]}),
+            frameRate: 16
+        });
+
+        // ground
         this.suolo = this.add.tileSprite(
             0,
             this.cameras.main.height - 40,
@@ -56,6 +76,7 @@ export class Game extends Phaser.Scene {
             16,
             'suelo'
         );
+
         this.suolo.setOrigin(0, 0);
         this.suolo.setScale(3);
 
@@ -142,14 +163,43 @@ export class Game extends Phaser.Scene {
             callbackScope: this,
             loop: true
         });
+        this.cursori = this?.input?.keyboard?.createCursorKeys();
 
         EventBus.emit('current-scene-ready', this);
     }
 
-    update() {
-        if (this.cursori.left?.isDown) {
+    placeObsticle() {
+        const obsticleNum = Math.floor(Math.random() * 7) + 1;
+
+        const trap = this.physics.add.sprite(
+            this.cameras.main.width, 
+            this.cameras.main.height - 60, 
+            'trappola'
+        );
+        
+        trap.setFrame(0);
+        
+        if (obsticleNum > 6) {
+            this.obsticles.add(trap);
+            trap.setScale(4);
+            trap.setImmovable(true);
+            trap.body.setAllowGravity(false);
+        }
+    }
+
+    update(delta: number) {
+        if (this.cursori?.left?.isDown) {
             this.velocitaCorrente += 0.01;
             console.log('Current speed: ' + this.velocitaCorrente);
+        }
+
+        Phaser.Actions.IncX(this.obsticles.getChildren(), -this.velocitaCorrente * 3)
+        // console.log(delta)
+
+        this.respawnTime += delta * this.velocitaCorrente * 0.08 / 10;
+        if (this.respawnTime >= 1500) {
+          this.placeObsticle();
+          this.respawnTime = 0;
         }
 
         this.sfondo.tilePositionX += this.velocitaCorrente;
@@ -157,7 +207,7 @@ export class Game extends Phaser.Scene {
 
 
         const ilGiocatoreSulTerreno = this.Giocatore.body ? (this.Giocatore.body.touching.down || this.Giocatore.body.blocked.down) : false;
-        if ((this.kya?.spaceBar?.isDown || this.cursori.space?.isDown) && ilGiocatoreSulTerreno) {
+        if ((this.kya?.spaceBar?.isDown || this.cursori?.space?.isDown) && ilGiocatoreSulTerreno) {
             this.Giocatore.setVelocityY(-800);
             this.Giocatore.play('jump', true);
             // Add a 1-second delay before playing run animation
