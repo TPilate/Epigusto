@@ -14,7 +14,7 @@ export class Game extends Phaser.Scene {
     testoPunteggio: Phaser.GameObjects.Text;
     vita: number;
     testoVita: Phaser.GameObjects.Text;
-    crates: Phaser.Physics.Arcade.Group;
+    casse: Phaser.Physics.Arcade.Group;
     private velocitaMassima: number;
     private intervalloIncremento: number;
     private punteggioTarget: number;
@@ -52,8 +52,8 @@ export class Game extends Phaser.Scene {
     }
 
     create() {
-        // Ajouter cette ligne pour initialiser le groupe crates
-        this.crates = this.physics.add.group();
+        // Ajouter cette ligne pour initialiser le groupe casse
+        this.casse = this.physics.add.group();
         
         this.camera = this.cameras.main;
         this.ostacolo = this.physics.add.group();
@@ -181,7 +181,7 @@ export class Game extends Phaser.Scene {
         });
         this.cursori = this?.input?.keyboard?.createCursorKeys();
 
-        this.add.image(this.cameras.main.width - 175, 5, 'crates').setOrigin(0, 0).setScale(3);
+        this.add.image(this.cameras.main.width - 175, 5, 'casse').setOrigin(0, 0).setScale(3);
 
         this.time.addEvent({
             delay: Phaser.Math.Between(3000, 8000),
@@ -201,8 +201,8 @@ export class Game extends Phaser.Scene {
         // Ajouter la collision entre le joueur et les caisses
         this.physics.add.overlap(
             this.Giocatore, 
-            this.crates, 
-            this.onPlayerCrateCollision, 
+            this.casse, 
+            this.suPlayerCrateCollision, 
             null, 
             this
         );
@@ -348,7 +348,7 @@ export class Game extends Phaser.Scene {
 
     private generaCassa(): void {
         const y = Phaser.Math.Between(this.cameras.main.height - 375, this.cameras.main.height - 250);
-        const crate = this.crates.create(this.cameras.main.width + 100, y, 'crate');
+        const crate = this.casse.create(this.cameras.main.width + 100, y, 'crate');
         crate.setOrigin(0, 0);
         crate.setScale(3);
 
@@ -357,7 +357,7 @@ export class Game extends Phaser.Scene {
     }
 
     private aggiornareCasse(): void {
-        this.crates.getChildren().forEach((child) => {
+        this.casse.getChildren().forEach((child) => {
             const crate = child as Phaser.Physics.Arcade.Sprite;
 
             crate.x -= this.velocitaCorrente * 3;
@@ -368,7 +368,7 @@ export class Game extends Phaser.Scene {
         });
     }
 
-    private onPlayerCrateCollision(player: Phaser.GameObjects.GameObject, crate: Phaser.GameObjects.GameObject): void {
+    private suPlayerCrateCollision(player: Phaser.GameObjects.GameObject, crate: Phaser.GameObjects.GameObject): void {
         // ADD logic for bonus
         crate.destroy();
     }
