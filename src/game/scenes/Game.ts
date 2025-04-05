@@ -36,7 +36,7 @@ export class Game extends Phaser.Scene {
         this.incrementoPunteggio = 2;
         this.velocitaMassima = 5.0;
         this.intervalloIncremento = 5000;
-        this.vita = 100;
+        this.vita = 0;
         this.tempoDiRigenerazione = 0
     }
 
