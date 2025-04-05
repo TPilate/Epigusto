@@ -86,17 +86,13 @@ export class Game extends Phaser.Scene {
         this.suolo.setScale(3);
 
         this.Giocatore = this.physics.add.sprite(80, 200, 'carattere');
-        this.Giocatore.setCollideWorldBounds(true);
-        this.physics.world.setBounds(0, 0, this.cameras.main.width, this.cameras.main.height - 155);
-        this.Giocatore.setBounce(0.3);
-        this.Giocatore.setGravityY(800);
         this.physics.add.existing(this.suolo, true); 
 
         this.Giocatore = this.physics.add.sprite(80, 200, 'carattere');
 
 
         this.physics.add.collider(this.Giocatore, this.suolo);
-        this.Giocatore.setSize(62, 120);
+        this.Giocatore.setSize(62, 105);
         this.Giocatore.setOffset(16, 16);
         this.Giocatore.setCollideWorldBounds(true);
         this.physics.world.setBounds(0, 0, this.cameras.main.width, this.cameras.main.height);
