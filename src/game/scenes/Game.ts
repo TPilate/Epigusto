@@ -20,7 +20,7 @@ export class Game extends Phaser.Scene {
     private intervalloIncremento: number;
     private punteggioTarget: number;
     private incrementoPunteggio: number;
-    private timerIncrementoPunteggio: Phaser.Time.TimerEvent;
+    timerIncrementoPunteggio: Phaser.Time.TimerEvent;
     ostacolo: Phaser.Physics.Arcade.Group;
     tempoDiRigenerazione: number;
     nomeUtente: string;
@@ -185,7 +185,6 @@ export class Game extends Phaser.Scene {
         });
         this.cursori = this?.input?.keyboard?.createCursorKeys();
 
-        this.add.image(this.cameras.main.width - 175, 5, 'casse').setOrigin(0, 0).setScale(3);
 
         this.time.addEvent({
             delay: Phaser.Math.Between(3000, 8000),
@@ -382,8 +381,8 @@ export class Game extends Phaser.Scene {
         });
     }
 
-    private suPlayerCrateCollision(player: Phaser.GameObjects.GameObject, crate: Phaser.GameObjects.GameObject): void {
+    suPlayerCrateCollision(_: Phaser.GameObjects.GameObject | Phaser.Tilemaps.Tile, crate: Phaser.GameObjects.GameObject | Phaser.Tilemaps.Tile): void {
         // ADD logic for bonus
-        crate.destroy();
+        (crate as Phaser.Physics.Arcade.Sprite).destroy();
     }
 }
