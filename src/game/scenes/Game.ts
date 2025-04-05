@@ -2,24 +2,26 @@ import { EventBus } from '../EventBus';
 import { Scene } from 'phaser';
 
 export class Game extends Scene {
-    camera: Phaser.Cameras.Scene2D.Camera;
+    fotocamera: Phaser.Cameras.Scene2D.Camera;
     sfondo: Phaser.GameObjects.TileSprite;
     testoGioco: Phaser.GameObjects.Text;
     suolo: Phaser.GameObjects.TileSprite;
     velocitaCorrente: number;
-    cursori: Phaser.Types.Input.Keyboard.CursorKeys;
-    score: number;
-    scoreText: Phaser.GameObjects.Text;
+    punteggio: number;
+    testoPunteggio: Phaser.GameObjects.Text;
 
     private velocitaMassima: number;
     private intervalloIncremento: number;
-
-
+    private punteggioTarget: number; 
+    private incrementoPunteggio: number;
+    private timerIncrementoPunteggio: Phaser.Time.TimerEvent;
 
     constructor() {
         super('Game');
         this.velocitaCorrente = 0.5;
-        this.score = 0;
+        this.punteggio = 0;
+        this.punteggioTarget = 0;
+        this.incrementoPunteggio = 2;
         this.velocitaMassima = 5.0;
         this.intervalloIncremento = 5000;
     }
@@ -34,7 +36,7 @@ export class Game extends Scene {
     }
 
     create() {
-        this.camera = this.cameras.main;
+        this.fotocamera = this.cameras.main;
 
         this.sfondo = this.add.tileSprite(0, 0, this.cameras.main.width, this.cameras.main.height, 'sfondo');
         this.sfondo.setOrigin(0, 0);
@@ -52,26 +54,31 @@ export class Game extends Scene {
 
 
         this.add.image(15, 5, 'pezzo').setOrigin(0, 0).setScale(0.1);
-        this.scoreText = this.add.text(
+        this.testoPunteggio = this.add.text(
             65,
             18,
             '0', {
+            fontFamily: 'minecraft',
             fontSize: '24px',
             color: '#fff'
         });
-        this.scoreText.setScrollFactor(0);
+        this.testoPunteggio.setScrollFactor(0);
 
-        // Set up a timer to increase score every second
         this.time.addEvent({
             delay: 1000,
             callback: () => {
-            this.increaseScore();
+                this.calcolaNuovoPunteggioTarget();
             },
             callbackScope: this,
             loop: true
         });
 
-        this.cursori = this.input.keyboard.createCursorKeys();
+        this.timerIncrementoPunteggio = this.time.addEvent({
+            delay: 50,
+            callback: this.aggiornaDisplayPunteggio,
+            callbackScope: this,
+            loop: true
+        });
         
         this.time.addEvent({
             delay: this.intervalloIncremento,
@@ -88,9 +95,21 @@ export class Game extends Scene {
         this.suolo.tilePositionX += this.velocitaCorrente;
     }
 
-    increaseScore() {
-        this.score += 100;
-        this.scoreText.setText('' + this.score);
+    calcolaNuovoPunteggioTarget() {
+        const bonusVelocita = Math.floor(this.velocitaCorrente * 100);
+        this.punteggioTarget += 1 + bonusVelocita;
+    }
+
+    aggiornaDisplayPunteggio() {
+        if (this.punteggio < this.punteggioTarget) {
+            this.punteggio += this.incrementoPunteggio;
+            
+            if (this.punteggio > this.punteggioTarget) {
+                this.punteggio = this.punteggioTarget;
+            }
+            
+            this.testoPunteggio.setText('' + this.punteggio);
+        }
     }
 
     cambiaScena() {
