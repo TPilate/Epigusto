@@ -385,11 +385,11 @@ export class Game extends Phaser.Scene {
 
     private suPlayerCrateCollision(player: Phaser.GameObjects.GameObject, crate: Phaser.GameObjects.GameObject): void {
         const coinsBonus = new Coins({
-            currentSpeed: this.velocitaCorrente,
-            updateScore: this.punteggio
+            velocitaAttuale: this.velocitaCorrente,
+            aggiornaPunteggio: this.punteggio
         });
         
-        const newScore = coinsBonus.start();
+        const newScore = coinsBonus.inizia();
         
         this.punteggio = newScore;
         this.punteggioTarget = newScore;
