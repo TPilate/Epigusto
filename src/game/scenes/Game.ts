@@ -36,7 +36,7 @@ export class Game extends Phaser.Scene {
         this.incrementoPunteggio = 2;
         this.velocitaMassima = 5.0;
         this.intervalloIncremento = 5000;
-        this.vita = 0;
+        this.vita = 100;
         this.tempoDiRigenerazione = 0
     }
 
@@ -400,8 +400,13 @@ export class Game extends Phaser.Scene {
             giocoVelocita: this.velocitaCorrente
         });
 
+        const velocitaOriginale = this.velocitaCorrente;
         this.velocitaCorrente = coniglioInstance.inizia();
-        
+
+        this.time.delayedCall(5000, () => {
+            this.velocitaCorrente = velocitaOriginale;
+        }, [], this);
+
 
         crate.destroy();
     }
