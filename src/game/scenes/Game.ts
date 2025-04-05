@@ -2,6 +2,7 @@ import * as Phaser from 'phaser';
 import { EventBus } from '../EventBus';
 import { Pezzo } from '../items/Pezzo';
 import { Cuore } from '../items/Cuore';
+import { Coniglio } from '../items/Coniglio';
 import { Tartaruga } from '../items/Tartaruga';
 
 export class Game extends Phaser.Scene {
@@ -397,6 +398,18 @@ export class Game extends Phaser.Scene {
         } else {
             this.testoVita.setText('' + this.vita);
         }
+
+        const coniglioInstance = new Coniglio({
+            giocoVelocita: this.velocitaCorrente
+        });
+
+        const velocitaOriginale = this.velocitaCorrente;
+        this.velocitaCorrente = coniglioInstance.inizia();
+
+        this.time.delayedCall(5000, () => {
+            this.velocitaCorrente = velocitaOriginale;
+        }, [], this);
+
 
         const TartarugaBonus = new Tartaruga({
             velocitaAttuale: this.velocitaCorrente,
