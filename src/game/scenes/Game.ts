@@ -59,13 +59,14 @@ export class Game extends Phaser.Scene {
     }
 
     create() {
-        // Ajouter cette ligne pour initialiser le groupe casse
         this.casse = this.physics.add.group();
         this.nomeUtente = localStorage.getItem("playerName") || "";
         this.camera = this.cameras.main;
         this.ostacolo = this.physics.add.group();
         
-        // sfondono
+
+        this.physics.world.createDebugGraphic();
+
         this.sfondo = this.add.tileSprite(0, 0, this.cameras.main.width, this.cameras.main.height, 'sfondo');
         this.sfondo.setOrigin(0, 0);
         this.sfondo.setAlpha(0.5);
@@ -83,7 +84,6 @@ export class Game extends Phaser.Scene {
             frameRate: 8,
         });
 
-        // ground
         this.suolo = this.add.tileSprite(
             0,
             this.cameras.main.height - 40,
@@ -122,7 +122,6 @@ export class Game extends Phaser.Scene {
             frameRate: 10,
         });
 
-        // Score UI
         this.add.image(15, 5, 'pezzo').setOrigin(0, 0).setScale(0.1);
         this.testoPunteggio = this.add.text(
             65,
@@ -134,7 +133,6 @@ export class Game extends Phaser.Scene {
         });
         this.testoPunteggio.setScrollFactor(0);
 
-        // Vie UI
         this.add.image(this.cameras.main.width - 175, 5, 'cuore').setOrigin(0, 0).setScale(0.2);
         this.testoVita = this.add.text(
             this.cameras.main.width - 75,
@@ -145,12 +143,15 @@ export class Game extends Phaser.Scene {
             color: '#fff'
         });
         this.testoVita.setScrollFactor(0);
-
+        this.vita = 3;
+        this.testoVita.setText('3');
         this.cursori = this.input.keyboard?.createCursorKeys() || {} as Phaser.Types.Input.Keyboard.CursorKeys;
 
         this.kya = this.input.keyboard?.addKeys({
             z: Phaser.Input.Keyboard.KeyCodes.Z,
             spaceBar: Phaser.Input.Keyboard.KeyCodes.SPACE,
+            s: Phaser.Input.Keyboard.KeyCodes.S,
+            down: Phaser.Input.Keyboard.KeyCodes.DOWN,            
             w: Phaser.Input.Keyboard.KeyCodes.W
         });
 
@@ -173,7 +174,6 @@ export class Game extends Phaser.Scene {
             loop: true
         });
 
-        // Speed increase timer
         this.time.addEvent({
             delay: this.intervalloIncremento,
             callback: this.aumentareVelocita,
@@ -198,7 +198,6 @@ export class Game extends Phaser.Scene {
             loop: true
         });
 
-        // Ajouter la collision entre le joueur et les caisses
         this.physics.add.overlap(
             this.Giocatore, 
             this.casse, 
@@ -227,13 +226,15 @@ export class Game extends Phaser.Scene {
         if (ostacoloNum > 6 && ostacoloNum < 8) {
             const trappola = this.physics.add.sprite(
                 this.cameras.main.width, 
-                this.cameras.main.height - 60, 
+                this.cameras.main.height - 60,
                 'trappola'
             );
             
             trappola.setFrame(0);
             this.ostacolo.add(trappola);
             trappola.setScale(4);
+            trappola.setSize(20, 8);
+
             trappola.setImmovable(true);
             trappola.body.setAllowGravity(false);
             trappola.setData('hasCollided', false);
@@ -274,8 +275,20 @@ export class Game extends Phaser.Scene {
         );
     }
     update(delta: number) {
-        if (this.cursori?.left?.isDown) {
-            this.velocitaCorrente += 0.01;
+
+        if(this.vita <= 0){
+            this.velocitaCorrente = 0;
+            this.ostacolo.getChildren().forEach((child) => {
+            (child as Phaser.Physics.Arcade.Sprite).setVelocity(0);
+            });
+            this.casse.getChildren().forEach((child) => {
+            (child as Phaser.Physics.Arcade.Sprite).setVelocity(0);
+            });
+            this.physics.pause();
+
+            this.time.delayedCall(1000, () => {
+            this.scene.start('GameOver');
+            });
         }
 
         Phaser.Actions.IncX(this.ostacolo.getChildren(), -this.velocitaCorrente * 3)
@@ -296,12 +309,18 @@ export class Game extends Phaser.Scene {
         if ((this.kya?.spaceBar?.isDown || this.cursori?.space?.isDown || this.kya?.z?.isDown || this.kya?.w?.isDown || this.cursori?.up.isDown) && ilGiocatoreSulTerreno) {
             this.Giocatore.setVelocityY(-600);
             this.Giocatore.play('jump', true);
-            // Add a 1-second delay before playing run animation
             this.time.delayedCall(500, () => {
                 this.Giocatore.play('run', true);
             });
             this.Giocatore.setBounce(0);
         }
+
+        if ((this.kya?.s?.isDown || this.kya?.down?.isDown) && !ilGiocatoreSulTerreno) {
+            this.Giocatore.setVelocityY(600); 
+            this.Giocatore.setBounce(0); 
+        }
+       
+
 
         if (ilGiocatoreSulTerreno && this.Giocatore.body && this.Giocatore.body.velocity.y === 0) {
             if (this.Giocatore.anims.currentAnim?.key !== 'run') {
