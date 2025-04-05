@@ -2,6 +2,7 @@ import * as Phaser from 'phaser';
 import { EventBus } from '../EventBus';
 import { Pezzo } from '../items/Pezzo';
 import { Cuore } from '../items/Cuore';
+import { Tartaruga } from '../items/Tartaruga';
 
 export class Game extends Phaser.Scene {
     camera: Phaser.Cameras.Scene2D.Camera;
@@ -395,6 +396,21 @@ export class Game extends Phaser.Scene {
             this.testoVita.setPosition(this.cameras.main.width - 80, 8);
         } else {
             this.testoVita.setText('' + this.vita);
+        }
+
+        const TartarugaBonus = new Tartaruga({
+            velocitaAttuale: this.velocitaCorrente,
+        })
+
+        const velocitaPrecedente = this.velocitaCorrente
+        const nuovoVelocita = TartarugaBonus.inizia()
+
+        this.velocitaCorrente = nuovoVelocita
+
+        if (this.velocitaCorrente !== velocitaPrecedente) {
+            this.time.delayedCall(10000, () => {
+                this.velocitaCorrente = velocitaPrecedente;
+            }, [], this);
         }
         
         crate.destroy();
