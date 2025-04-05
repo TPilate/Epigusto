@@ -187,11 +187,7 @@ export class Game extends Phaser.Scene {
     }
 
     easterEgg () {
-        console.log("toto")
-        console.log(this.nomeUtente)
-        console.log(this.nomeUtente.toLocaleLowerCase())
         if (this.nomeUtente.toLocaleLowerCase() == "phoenix" ) {
-            console.log("tata")
             this.camera.setBackgroundColor(0xff0000);
 
             this.sfondono = this.add.image(512, 384, 'sfondono');
