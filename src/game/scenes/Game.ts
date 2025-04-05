@@ -19,9 +19,8 @@ export class Game extends Phaser.Scene {
     private punteggioTarget: number;
     private incrementoPunteggio: number;
     private timerIncrementoPunteggio: Phaser.Time.TimerEvent;
-    obsticles: Phaser.Physics.Arcade.Group;
-    respawnTime: number;
-
+    ostacolo: Phaser.Physics.Arcade.Group;
+    tempoDiRigenerazione: number;
 
     constructor() {
         super('Game');
@@ -32,7 +31,7 @@ export class Game extends Phaser.Scene {
         this.velocitaMassima = 5.0;
         this.intervalloIncremento = 5000;
         this.vita = 0;
-        this.respawnTime = 0
+        this.tempoDiRigenerazione = 0
     }
 
     preload() {
@@ -54,7 +53,7 @@ export class Game extends Phaser.Scene {
 
     create() {
         this.camera = this.cameras.main;
-        this.obsticles = this.physics.add.group();
+        this.ostacolo = this.physics.add.group();
 
         this.physics.world.createDebugGraphic();
         
@@ -207,7 +206,7 @@ export class Game extends Phaser.Scene {
             );
             
             trappola.setFrame(0);
-            this.obsticles.add(trappola);
+            this.ostacolo.add(trappola);
             trappola.setScale(4);
             trappola.setImmovable(true);
             trappola.body.setAllowGravity(false);
@@ -241,7 +240,7 @@ export class Game extends Phaser.Scene {
     }
     initCollider() {
         this.physics.add.overlap(
-            this.obsticles, 
+            this.ostacolo, 
             this.Giocatore, 
             (player, ostacolo) => {
                 this.trappolaCollisione(ostacolo as Phaser.Physics.Arcade.Sprite);
@@ -254,12 +253,12 @@ export class Game extends Phaser.Scene {
             console.log('Current speed: ' + this.velocitaCorrente);
         }
 
-        Phaser.Actions.IncX(this.obsticles.getChildren(), -this.velocitaCorrente * 3)
+        Phaser.Actions.IncX(this.ostacolo.getChildren(), -this.velocitaCorrente * 3)
 
-        this.respawnTime += delta * this.velocitaCorrente * 0.08 / 10;
-        if (this.respawnTime >= 1500) {
+        this.tempoDiRigenerazione += delta * this.velocitaCorrente * 0.08 / 10;
+        if (this.tempoDiRigenerazione >= 1500) {
           this.luogoOstacolo();
-          this.respawnTime = 0;
+          this.tempoDiRigenerazione = 0;
         }
 
         this.sfondo.tilePositionX += this.velocitaCorrente;
