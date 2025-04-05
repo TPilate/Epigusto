@@ -7,7 +7,7 @@ export class Game extends Phaser.Scene {
     testoGioco: Phaser.GameObjects.Text;
     suolo: Phaser.GameObjects.TileSprite;
     velocitaCorrente: number;
-    cursori: Phaser.Types.Input.Keyboard.CursorKeys;
+    cursori: Phaser.Types.Input.Keyboard.CursorKeys | undefined;
     Giocatore: Phaser.Physics.Arcade.Sprite;
     kya: any;
     punteggio: number;
@@ -19,6 +19,8 @@ export class Game extends Phaser.Scene {
     private punteggioTarget: number;
     private incrementoPunteggio: number;
     private timerIncrementoPunteggio: Phaser.Time.TimerEvent;
+    ostacolo: Phaser.Physics.Arcade.Group;
+    tempoDiRigenerazione: number;
 
     constructor() {
         super('Game');
@@ -29,6 +31,7 @@ export class Game extends Phaser.Scene {
         this.velocitaMassima = 5.0;
         this.intervalloIncremento = 5000;
         this.vita = 0;
+        this.tempoDiRigenerazione = 0
     }
 
     preload() {
@@ -39,16 +42,36 @@ export class Game extends Phaser.Scene {
         });
         this.load.image('pezzo', 'assets/pezzo.png');
         this.load.image('cuore', 'assets/cuore.png');
-        this.load.atlas('character', './assets/PersonaggioFoglioSprite.png', './assets/PersonaggioFoglio.json');
+        this.load.atlas('carattere', './assets/PersonaggioFoglioSprite.png', './assets/PersonaggioFoglio.json');
+        this.load.spritesheet('trappola', 'assets/trappola_per_orsi.png', {
+            frameWidth: 16,
+            frameHeight: 16
+        });
     }
 
     create() {
         this.camera = this.cameras.main;
-
+        this.ostacolo = this.physics.add.group();
+        
+        // background
         this.sfondo = this.add.tileSprite(0, 0, this.cameras.main.width, this.cameras.main.height, 'sfondo');
         this.sfondo.setOrigin(0, 0);
         this.sfondo.setAlpha(0.5);
 
+        this.anims.create({
+            key: "caratrappolaChiusa",
+            frames: this.anims.generateFrameNumbers('trappola', {frames:[0, 1, 2, 3]}),
+            frameRate: 8,
+            repeat: 0
+        });
+
+        this.anims.create({
+            key: 'death',
+            frames: this.anims.generateFrameNames('carattere', { prefix: 'death', end: 4, zeroPad: 2 }),
+            frameRate: 8,
+        });
+
+        // ground
         this.suolo = this.add.tileSprite(
             0,
             this.cameras.main.height - 40,
@@ -56,25 +79,34 @@ export class Game extends Phaser.Scene {
             16,
             'suelo'
         );
+
         this.suolo.setOrigin(0, 0);
         this.suolo.setScale(3);
 
-        this.Giocatore = this.physics.add.sprite(80, 200, 'character');
+        this.Giocatore = this.physics.add.sprite(80, 200, 'carattere');
+        this.physics.add.existing(this.suolo, true); 
+
+        this.Giocatore = this.physics.add.sprite(80, 200, 'carattere');
+
+
+        this.physics.add.collider(this.Giocatore, this.suolo);
+        this.Giocatore.setSize(62, 105);
+        this.Giocatore.setOffset(16, 16);
         this.Giocatore.setCollideWorldBounds(true);
-        this.physics.world.setBounds(0, 0, this.cameras.main.width, this.cameras.main.height - 155);
+        this.physics.world.setBounds(0, 0, this.cameras.main.width, this.cameras.main.height);
         this.Giocatore.setBounce(0.3);
         this.Giocatore.setGravityY(800);
 
         this.anims.create({
             key: 'run',
-            frames: this.anims.generateFrameNames('character', { prefix: 'run', end: 4, zeroPad: 2 }),
+            frames: this.anims.generateFrameNames('carattere', { prefix: 'run', end: 4, zeroPad: 2 }),
             frameRate: 10,
             repeat: -1
         });
 
         this.anims.create({
             key: 'jump',
-            frames: this.anims.generateFrameNames('character', { prefix: 'jump', end: 3, zeroPad: 2 }),
+            frames: this.anims.generateFrameNames('carattere', { prefix: 'jump', end: 3, zeroPad: 2 }),
             frameRate: 10,
         });
 
@@ -142,14 +174,75 @@ export class Game extends Phaser.Scene {
             callbackScope: this,
             loop: true
         });
+        this.cursori = this?.input?.keyboard?.createCursorKeys();
 
+        this.initCollisione()
         EventBus.emit('current-scene-ready', this);
     }
 
-    update() {
-        if (this.cursori.left?.isDown) {
+    luogoOstacolo() {
+        const ostacoloNum = Math.floor(Math.random() * 7) + 1;
+        
+        if (ostacoloNum > 6) {
+            const trappola = this.physics.add.sprite(
+                this.cameras.main.width, 
+                this.cameras.main.height - 60, 
+                'trappola'
+            );
+            
+            trappola.setFrame(0);
+            this.ostacolo.add(trappola);
+            trappola.setScale(4);
+            trappola.setImmovable(true);
+            trappola.body.setAllowGravity(false);
+            trappola.setData('hasCollided', false);
+        } else {
+            return
+        }
+    }
+
+    trappolaCollisione(ostacolo: Phaser.Physics.Arcade.Sprite) {
+        if (ostacolo.getData('hasCollided')) {
+            return;
+        }
+        
+        ostacolo.setData('hasCollided', true);
+        
+        ostacolo.play("caratrappolaChiusa", true);
+        
+        ostacolo.once('animationcomplete', () => {
+            ostacolo.destroy();
+        });
+        
+        this.vita -= 1;
+        this.testoVita.setText('' + this.vita);
+        
+        if (this.vita <= 0) {
+            this.time.delayedCall(500, () => {
+                this.cambiaScena();
+            });
+        }
+    }
+    initCollisione() {
+        this.physics.add.overlap(
+            this.ostacolo, 
+            this.Giocatore, 
+            (player, ostacolo) => {
+                this.trappolaCollisione(ostacolo as Phaser.Physics.Arcade.Sprite);
+            }
+        );
+    }
+    update(delta: number) {
+        if (this.cursori?.left?.isDown) {
             this.velocitaCorrente += 0.01;
-            console.log('Current speed: ' + this.velocitaCorrente);
+        }
+
+        Phaser.Actions.IncX(this.ostacolo.getChildren(), -this.velocitaCorrente * 3)
+
+        this.tempoDiRigenerazione += delta * this.velocitaCorrente * 0.08 / 10;
+        if (this.tempoDiRigenerazione >= 1500) {
+          this.luogoOstacolo();
+          this.tempoDiRigenerazione = 0;
         }
 
         this.sfondo.tilePositionX += this.velocitaCorrente;
@@ -157,8 +250,8 @@ export class Game extends Phaser.Scene {
 
 
         const ilGiocatoreSulTerreno = this.Giocatore.body ? (this.Giocatore.body.touching.down || this.Giocatore.body.blocked.down) : false;
-        if ((this.kya?.spaceBar?.isDown || this.cursori.space?.isDown) && ilGiocatoreSulTerreno) {
-            this.Giocatore.setVelocityY(-800);
+        if ((this.kya?.spaceBar?.isDown || this.cursori?.space?.isDown) && ilGiocatoreSulTerreno) {
+            this.Giocatore.setVelocityY(-600);
             this.Giocatore.play('jump', true);
             // Add a 1-second delay before playing run animation
             this.time.delayedCall(500, () => {
@@ -204,7 +297,11 @@ export class Game extends Phaser.Scene {
     }
 
     cambiaScena() {
-        this.scene.start('GameOver');
+        this.Giocatore.play('death', true);
+
+        this.time.delayedCall(1000, () => {
+            this.scene.start('GameOver');
+        });
     }
 
     private aumentareVelocita(): void {
