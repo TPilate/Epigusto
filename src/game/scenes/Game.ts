@@ -183,16 +183,20 @@ export class Game extends Phaser.Scene {
 
         this.add.image(this.cameras.main.width - 175, 5, 'crates').setOrigin(0, 0).setScale(3);
 
-        // Ajouter ces lignes pour générer des caisses toutes les 5 secondes
         this.time.addEvent({
-            delay: 5000,
-            callback: this.generaCassa,
+            delay: Phaser.Math.Between(3000, 8000),
+            callback: () => {
+            this.generaCassa();
+            this.time.addEvent({
+                delay: Phaser.Math.Between(3000, 8000),
+                callback: this.generaCassa,
+                callbackScope: this,
+                loop: false
+            });
+            },
             callbackScope: this,
             loop: true
         });
-
-        // Générer une première caisse
-        this.generaCassa();
 
         // Ajouter la collision entre le joueur et les caisses
         this.physics.add.overlap(
@@ -366,5 +370,6 @@ export class Game extends Phaser.Scene {
 
     private onPlayerCrateCollision(player: Phaser.GameObjects.GameObject, crate: Phaser.GameObjects.GameObject): void {
         // ADD logic for bonus
+        crate.destroy();
     }
 }
