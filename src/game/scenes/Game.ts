@@ -71,8 +71,7 @@ export class Game extends Phaser.Scene {
         this.anims.create({
             key: 'jump',
             frames: this.anims.generateFrameNames('character', { prefix: 'jump', end: 3, zeroPad: 2 }),
-            frameRate: 20,
-            repeat: 0
+            frameRate: 10,
         });
 
         // Score UI
@@ -128,14 +127,24 @@ export class Game extends Phaser.Scene {
         this.sfondo.tilePositionX += this.velocitaCorrente;
         this.suolo.tilePositionX += this.velocitaCorrente;
         
-        if (this.kya?.spaceBar?.isDown) {
-            this.Giocatore.setVelocityY(-600);
+
+        const ilGiocatoreSulTerreno = this.Giocatore.body ? (this.Giocatore.body.touching.down || this.Giocatore.body.blocked.down) : false;
+        if ((this.kya?.spaceBar?.isDown || this.cursori.space?.isDown) && ilGiocatoreSulTerreno) {
+            this.Giocatore.setVelocityY(-800);
             this.Giocatore.play('jump', true);
+            // Add a 1-second delay before playing run animation
+            this.time.delayedCall(500, () => {
+                this.Giocatore.play('run', true);
+            });
+
         }
         
-        if (!this.cursori.space.isDown) {
-            this.Giocatore.play('run', true);
+        if (ilGiocatoreSulTerreno && this.Giocatore.body && this.Giocatore.body.velocity.y === 0) {
+            if (this.Giocatore.anims.currentAnim?.key !== 'run') {
+                this.Giocatore.play('run', true);
+            }
         }
+        
     }
 
     calcolaNuovoPunteggioTarget() {
@@ -161,7 +170,6 @@ export class Game extends Phaser.Scene {
 
     private aumentareVelocita(): void {
         const valoreIncremento = 0.2;
-        
         this.velocitaCorrente += valoreIncremento;
         
         if (this.velocitaCorrente > this.velocitaMassima) {
