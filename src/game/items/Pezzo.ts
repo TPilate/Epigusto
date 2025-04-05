@@ -1,4 +1,3 @@
-import Phaser from "phaser";
 export interface PezzoConfigurazione {
     velocitaAttuale: number;
     aggiornaPunteggio: number;
