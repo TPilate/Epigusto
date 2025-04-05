@@ -4,32 +4,61 @@ import { Scene } from 'phaser';
 export class Game extends Scene
 {
     camera: Phaser.Cameras.Scene2D.Camera;
-    background: Phaser.GameObjects.Image;
-    gameText: Phaser.GameObjects.Text;
+    sfondo: Phaser.GameObjects.TileSprite;
+    testoGioco: Phaser.GameObjects.Text;
+    suolo: Phaser.GameObjects.TileSprite; 
+    velocitaCorrente: number;
+    cursori: Phaser.Types.Input.Keyboard.CursorKeys;
 
     constructor ()
     {
         super('Game');
+        this.velocitaCorrente = 0.5;
+    }
+
+    preload () 
+    {
+        this.load.image('sfondo', 'assets/sfondo.png');
+        this.load.spritesheet('suelo', 'assets/suolo.png', {
+            frameWidth: 16,
+            frameHeight: 16
+          });
     }
 
     create ()
     {
         this.camera = this.cameras.main;
-        this.camera.setBackgroundColor(0x00ff00);
 
-        this.background = this.add.image(512, 384, 'background');
-        this.background.setAlpha(0.5);
+        this.sfondo = this.add.tileSprite(0, 0, this.cameras.main.width, this.cameras.main.height, 'sfondo');
+        this.sfondo.setOrigin(0, 0);
+        this.sfondo.setAlpha(0.5);
+        
+        this.suolo = this.add.tileSprite(
+            0,
+            this.cameras.main.height - 40,
+            this.cameras.main.width,
+            16,
+            'suelo'
+        );
+        this.suolo.setOrigin(0, 0);
+        this.suolo.setScale(3);
 
-        this.gameText = this.add.text(512, 384, 'Pasta !!! ', {
-            fontFamily: 'Arial Black', fontSize: 38, color: '#ffffff',
-            stroke: '#000000', strokeThickness: 8,
-            align: 'center'
-        }).setOrigin(0.5).setDepth(100);
+        this.cursori = this.input.keyboard.createCursorKeys();
 
         EventBus.emit('current-scene-ready', this);
     }
 
-    changeScene ()
+    update() {
+        if (this.cursori.left.isDown) {
+            this.velocitaCorrente += 0.01;
+            console.log('Current speed: ' + this.velocitaCorrente);
+        }
+
+        this.sfondo.tilePositionX += this.velocitaCorrente;
+        this.suolo.tilePositionX += this.velocitaCorrente;
+    }
+
+    cambiaScena ()
     {
         this.scene.start('GameOver');
     }
