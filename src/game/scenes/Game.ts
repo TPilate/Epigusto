@@ -97,7 +97,7 @@ export class Game extends Phaser.Scene {
             10,
             '0', {
             fontFamily: 'minecraft',
-            fontSize: '68px',
+            fontSize: '52px',
             color: '#fff'
         });
         this.testoVita.setScrollFactor(0);
@@ -201,11 +201,6 @@ export class Game extends Phaser.Scene {
 
         this.vita += 1;
         this.testoVita.setText('' + this.vita);
-
-        if (this.vita == 10) {
-            this.testoVita.setText('∞');
-            this.testoVita.setPosition(this.cameras.main.width - 80, 8);
-        }
     }
 
     cambiaScena() {
