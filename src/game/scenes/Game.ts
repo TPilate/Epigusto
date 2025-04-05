@@ -128,8 +128,8 @@ export class Game extends Phaser.Scene {
         this.suolo.tilePositionX += this.velocitaCorrente;
         
 
-        const isOnGround = this.Giocatore.body ? (this.Giocatore.body.touching.down || this.Giocatore.body.blocked.down) : false;
-        if ((this.kya?.spaceBar?.isDown || this.cursori.space?.isDown) && isOnGround) {
+        const ilGiocatoreSulTerreno = this.Giocatore.body ? (this.Giocatore.body.touching.down || this.Giocatore.body.blocked.down) : false;
+        if ((this.kya?.spaceBar?.isDown || this.cursori.space?.isDown) && ilGiocatoreSulTerreno) {
             this.Giocatore.setVelocityY(-800);
             this.Giocatore.play('jump', true);
             // Add a 1-second delay before playing run animation
@@ -139,7 +139,7 @@ export class Game extends Phaser.Scene {
 
         }
         
-        if (isOnGround && this.Giocatore.body && this.Giocatore.body.velocity.y === 0) {
+        if (ilGiocatoreSulTerreno && this.Giocatore.body && this.Giocatore.body.velocity.y === 0) {
             if (this.Giocatore.anims.currentAnim?.key !== 'run') {
                 this.Giocatore.play('run', true);
             }
