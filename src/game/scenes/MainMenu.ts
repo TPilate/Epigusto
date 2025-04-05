@@ -7,12 +7,12 @@ export class MainMenu extends Scene
     background: GameObjects.Image;
     logo: GameObjects.Image;
     logoTween: Phaser.Tweens.Tween | null;
-    nameFormContainer: HTMLFormElement;
-    nameInput: HTMLInputElement;
-    nameInputContainer: HTMLDivElement;
-    submitButton: HTMLButtonElement;
-    playerName: string = '';
-    handleKeyPress: (e: KeyboardEvent) => void;
+    contenitoreFormNome: HTMLFormElement;
+    inputNome: HTMLInputElement;
+    contenitoreInputNome: HTMLDivElement;
+    pulsanteInvio: HTMLButtonElement;
+    nomeGiocatore: string = '';
+    gestisciTastoPremi: (e: KeyboardEvent) => void;
 
     constructor ()
     {
@@ -27,8 +27,8 @@ export class MainMenu extends Scene
     create ()
     {
         this.background = this.add.image(512, 384, 'background');
-        this.createNameInput();
-        this.loadPlayerName();
+        this.creaInputNome();
+        this.caricaNomeGiocatore();
 
         this.logo = this.add.image(512, 300, 'logo').setDepth(100);
 
@@ -36,88 +36,88 @@ export class MainMenu extends Scene
         EventBus.emit('current-scene-ready', this);
     }
 
-    createNameInput() {
-        this.nameFormContainer = document.createElement("form")
-        this.nameInputContainer = document.createElement('div');
-        this.nameInputContainer.classList.add("name-input-container")
+    creaInputNome() {
+        this.contenitoreFormNome = document.createElement("form")
+        this.contenitoreInputNome = document.createElement('div');
+        this.contenitoreInputNome.classList.add("name-input-container")
         
-        this.nameInput = document.createElement('input');
-        this.nameInput.autocomplete = "off"
-        this.nameInput.required = true
-        this.nameInput.type = 'text';
-        this.nameInput.placeholder = 'Enter your name';
-        this.nameInput.id = 'player-name-input';
+        this.inputNome = document.createElement('input');
+        this.inputNome.autocomplete = "off"
+        this.inputNome.required = true
+        this.inputNome.type = 'text';
+        this.inputNome.placeholder = 'Enter your name';
+        this.inputNome.id = 'player-name-input';
         
-        this.submitButton = document.createElement('button');
-        this.submitButton.textContent = 'Start Game';
-        this.submitButton.classList.add("submit-button")
+        this.pulsanteInvio = document.createElement('button');
+        this.pulsanteInvio.textContent = 'Start Game';
+        this.pulsanteInvio.classList.add("submit-button")
         
-        const inputTexture = this.textures.get('input-bg');
-        const buttonTexture = this.textures.get('button-bg');
+        const texturaInput = this.textures.get('input-bg');
+        const texturaPulsante = this.textures.get('button-bg');
 
-        const inputAspectRatio = inputTexture.source[0].height / inputTexture.source[0].width;
-        this.nameInput.style.width = `300px`;
-        this.nameInput.style.height = `${Math.round(300 * inputAspectRatio)}px`;
+        const rapportoProporzioniInput = texturaInput.source[0].height / texturaInput.source[0].width;
+        this.inputNome.style.width = `300px`;
+        this.inputNome.style.height = `${Math.round(300 * rapportoProporzioniInput)}px`;
 
-        const buttonAspectRatio = buttonTexture.source[0].height / buttonTexture.source[0].width;
-        this.submitButton.style.width = `300px`;
-        this.submitButton.style.height = `${Math.round(300 * buttonAspectRatio)}px`;
+        const rapportoProporzioniPulsante = texturaPulsante.source[0].height / texturaPulsante.source[0].width;
+        this.pulsanteInvio.style.width = `300px`;
+        this.pulsanteInvio.style.height = `${Math.round(300 * rapportoProporzioniPulsante)}px`;
 
-        this.submitButton.addEventListener('click', (e) => {
+        this.pulsanteInvio.addEventListener('click', (e) => {
             e.preventDefault();
-            this.savePlayerName();
-            this.removeInputElements();
+            this.salvaNomeGiocatore();
+            this.rimuoviElementiInput();
             this.changeScene();
-        this.handleKeyPress = (e: KeyboardEvent) => {
+        this.gestisciTastoPremi = (e: KeyboardEvent) => {
             if (e.key === 'Enter') {
                 e.preventDefault();
-                this.savePlayerName();
-                this.removeInputElements();
+                this.salvaNomeGiocatore();
+                this.rimuoviElementiInput();
                 this.changeScene();
             }
         };
-        this.nameInput.addEventListener('keypress', this.handleKeyPress);
+        this.inputNome.addEventListener('keypress', this.gestisciTastoPremi);
         });
         
-        this.nameInputContainer.appendChild(this.nameInput);
-        this.nameInputContainer.appendChild(this.submitButton);
-        this.nameFormContainer.appendChild(this.nameInputContainer)
-        document.body.appendChild(this.nameFormContainer);
+        this.contenitoreInputNome.appendChild(this.inputNome);
+        this.contenitoreInputNome.appendChild(this.pulsanteInvio);
+        this.contenitoreFormNome.appendChild(this.contenitoreInputNome)
+        document.body.appendChild(this.contenitoreFormNome);
         
-        if (this.playerName) {
-            this.nameInput.value = this.playerName;
+        if (this.nomeGiocatore) {
+            this.inputNome.value = this.nomeGiocatore;
         }
     }
     
-    savePlayerName() {
-        const name = this.nameInput.value.trim();
-        if (name) {
-            this.playerName = name;
-            localStorage.setItem('playerName', name);
+    salvaNomeGiocatore() {
+        const nome = this.inputNome.value.trim();
+        if (nome) {
+            this.nomeGiocatore = nome;
+            localStorage.setItem('playerName', nome);
             
             this.scene.restart();
         }
     }
     
-    loadPlayerName() {
-        const savedName = localStorage.getItem('playerName');
-        if (savedName) {
-            this.playerName = savedName;
+    caricaNomeGiocatore() {
+        const nomeSalvato = localStorage.getItem('playerName');
+        if (nomeSalvato) {
+            this.nomeGiocatore = nomeSalvato;
         }
     }
 
     handleShutdown() {
-        if (this.nameFormContainer && this.nameFormContainer.parentNode) {
-            this.nameFormContainer.parentNode.removeChild(this.nameFormContainer);
+        if (this.contenitoreFormNome && this.contenitoreFormNome.parentNode) {
+            this.contenitoreFormNome.parentNode.removeChild(this.contenitoreFormNome);
         }
     }
 
-    removeInputElements() {
-        if (this.nameFormContainer && this.nameFormContainer.parentNode) {
-            this.submitButton.removeEventListener('click', this.savePlayerName);
-            this.nameInput.removeEventListener('keypress', this.handleKeyPress);
+    rimuoviElementiInput() {
+        if (this.contenitoreFormNome && this.contenitoreFormNome.parentNode) {
+            this.pulsanteInvio.removeEventListener('click', this.salvaNomeGiocatore);
+            this.inputNome.removeEventListener('keypress', this.gestisciTastoPremi);
             
-            this.nameFormContainer.parentNode.removeChild(this.nameFormContainer);
+            this.contenitoreFormNome.parentNode.removeChild(this.contenitoreFormNome);
         }
     }
     
@@ -129,7 +129,7 @@ export class MainMenu extends Scene
             this.logoTween = null;
         }
         
-        this.removeInputElements();
+        this.rimuoviElementiInput();
         
         this.scene.start('Game');
     }
