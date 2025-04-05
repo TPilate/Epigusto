@@ -107,7 +107,7 @@ export class Game extends Phaser.Scene {
         });
 
         this.timerIncrementoPunteggio = this.time.addEvent({
-            delay: 50,
+            delay: 100,
             callback: this.aggiornaDisplayPunteggio,
             callbackScope: this,
             loop: true
