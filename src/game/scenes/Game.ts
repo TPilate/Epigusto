@@ -4,6 +4,7 @@ import { EventBus } from '../EventBus';
 export class Game extends Phaser.Scene {
     camera: Phaser.Cameras.Scene2D.Camera;
     sfondo: Phaser.GameObjects.TileSprite;
+    sfondono: Phaser.GameObjects.Image;
     testoGioco: Phaser.GameObjects.Text;
     suolo: Phaser.GameObjects.TileSprite;
     velocitaCorrente: number;
@@ -21,6 +22,7 @@ export class Game extends Phaser.Scene {
     private timerIncrementoPunteggio: Phaser.Time.TimerEvent;
     ostacolo: Phaser.Physics.Arcade.Group;
     tempoDiRigenerazione: number;
+    nomeUtente: string;
 
     constructor() {
         super('Game');
@@ -36,6 +38,7 @@ export class Game extends Phaser.Scene {
 
     preload() {
         this.load.image('sfondo', 'assets/sfondo.png');
+        this.load.image('sfondono', 'assets/sfondo.png');
         this.load.spritesheet('suelo', 'assets/suolo.png', {
             frameWidth: 16,
             frameHeight: 16
@@ -47,13 +50,14 @@ export class Game extends Phaser.Scene {
             frameWidth: 16,
             frameHeight: 16
         });
-    }
-
+    }   
     create() {
+        this.nomeUtente = localStorage.getItem("playerName") || "";
+        this.camera = this.cameras.main;
         this.camera = this.cameras.main;
         this.ostacolo = this.physics.add.group();
         
-        // background
+        // sfondono
         this.sfondo = this.add.tileSprite(0, 0, this.cameras.main.width, this.cameras.main.height, 'sfondo');
         this.sfondo.setOrigin(0, 0);
         this.sfondo.setAlpha(0.5);
@@ -178,7 +182,17 @@ export class Game extends Phaser.Scene {
         this.cursori = this?.input?.keyboard?.createCursorKeys();
 
         this.initCollisione()
+        this.easterEgg()
         EventBus.emit('current-scene-ready', this);
+    }
+
+    easterEgg () {
+        if (this.nomeUtente.toLocaleLowerCase() == "phoenix" ) {
+            this.camera.setBackgroundColor(0xff0000);
+
+            this.sfondono = this.add.image(512, 384, 'sfondono');
+            this.sfondono.setAlpha(0.5);
+        }
     }
 
     luogoOstacolo() {
