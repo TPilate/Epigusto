@@ -9,7 +9,7 @@ export class Game extends Scene
     suolo: Phaser.GameObjects.TileSprite; 
     velocitaCorrente: number;
 
-    private velocitaMas: number;
+    private velocitaMassima: number;
     private intervalloIncremento: number;
 
 
@@ -17,7 +17,7 @@ export class Game extends Scene
     {
         super('Game');
         this.velocitaCorrente = 0.5;
-        this.velocitaMas = 5.0;
+        this.velocitaMassima = 5.0;
         this.intervalloIncremento = 5000;
     }
 
@@ -73,8 +73,8 @@ export class Game extends Scene
         
         this.velocitaCorrente += valoreIncremento;
         
-        if (this.velocitaCorrente > this.velocitaMas) {
-            this.velocitaCorrente = this.velocitaMas;
+        if (this.velocitaCorrente > this.velocitaMassima) {
+            this.velocitaCorrente = this.velocitaMassima;
         }
     }
 }
