@@ -1,7 +1,6 @@
 import * as Phaser from 'phaser';
 import { EventBus } from '../EventBus';
 import { Pezzo } from '../items/Pezzo';
-import { Coins } from '../items/Coins';
 import { Cuore } from '../items/Cuore';
 
 export class Game extends Phaser.Scene {
@@ -379,25 +378,19 @@ export class Game extends Phaser.Scene {
         this.testoPunteggio.setText('' + this.punteggio);
         
         (crate as Phaser.Physics.Arcade.Sprite).destroy();
-        const coinsBonus = new Coins({
-            velocitaAttuale: this.velocitaCorrente,
-            aggiornaPunteggio: this.punteggio
-        });
 
         const cuoreBonus = new Cuore({
-            cuore: this.vita;
+            cuore: this.vita
         })
         
-        const newScore = coinsBonus.inizia();
-        const newVita = cuoreBonus.inizia()
+        const nuovoVita = cuoreBonus.inizia()
         
-        this.punteggio = newScore;
-        this.punteggioTarget = newScore;
         this.testoPunteggio.setText('' + this.punteggio);
 
-        this.vita = newVita;
+        this.vita = nuovoVita;
 
         if (this.vita >= 10) {
+            this.vita = 9999
             this.testoVita.setText('∞');
             this.testoVita.setPosition(this.cameras.main.width - 80, 8);
         } else {
