@@ -10,8 +10,8 @@ export class Game extends Phaser.Scene {
     cursori: Phaser.Types.Input.Keyboard.CursorKeys;
     Giocatore: Phaser.Physics.Arcade.Sprite;
     kya: any;
-    life: number;
-    lifeText: Phaser.GameObjects.Text;
+    vita: number;
+    testoVita: Phaser.GameObjects.Text;
     private velocitaMassima: number;
     private intervalloIncremento: number;
 
@@ -21,7 +21,7 @@ export class Game extends Phaser.Scene {
         this.velocitaCorrente = 0.5;
         this.velocitaMassima = 5.0;
         this.intervalloIncremento = 5000;
-        this.life = 10;
+        this.vita = 10;
     }
 
     preload() {
@@ -53,7 +53,7 @@ export class Game extends Phaser.Scene {
         
         // life visual
         this.add.image(this.cameras.main.width - 175, 5, 'cuore').setOrigin(0, 0).setScale(0.2);
-        this.lifeText = this.add.text(
+        this.testoVita = this.add.text(
             this.cameras.main.width - 75,
             10,
             '0', {
@@ -61,11 +61,11 @@ export class Game extends Phaser.Scene {
                 fontSize: '52px',
                 color: '#fff'
             });
-        this.lifeText.setScrollFactor(0);
+        this.testoVita.setScrollFactor(0);
         
         this.time.addEvent({
             delay: 1000,
-            callback: this.increaseLife,
+            callback: this.aumentaVita,
             callbackScope: this,
             loop: true
         });
@@ -128,12 +128,12 @@ export class Game extends Phaser.Scene {
         }
     }
 
-    increaseLife() {
-        this.life += 1;
-        this.lifeText.setText('' + this.life);
-        if (this.life > 10) {
-            this.lifeText.setText('∞');
-            this.lifeText.setPosition(this.cameras.main.width - 80, 8);
+    aumentaVita() {
+        this.vita += 1;
+        this.testoVita.setText('' + this.vita);
+        if (this.vita > 10) {
+            this.testoVita.setText('∞');
+            this.testoVita.setPosition(this.cameras.main.width - 80, 8);
         }
     }
 
