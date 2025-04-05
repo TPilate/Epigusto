@@ -10,10 +10,15 @@ export class Game extends Phaser.Scene {
     cursori: Phaser.Types.Input.Keyboard.CursorKeys;
     Giocatore: Phaser.Physics.Arcade.Sprite;
     kya: any;
+    private velocitaMassima: number;
+    private intervalloIncremento: number;
+
 
     constructor() {
         super('Game');
         this.velocitaCorrente = 0.5;
+        this.velocitaMassima = 5.0;
+        this.intervalloIncremento = 5000;
     }
 
     preload() {
@@ -72,6 +77,12 @@ export class Game extends Phaser.Scene {
         });
         
         this.Giocatore.play('run');   
+        this.time.addEvent({
+            delay: this.intervalloIncremento,
+            callback: this.aumentareVelocita,
+            callbackScope: this,
+            loop: true
+        });
 
         EventBus.emit('current-scene-ready', this);
     }
@@ -94,5 +105,15 @@ export class Game extends Phaser.Scene {
 
     cambiaScena() {
         this.scene.start('GameOver');
+    }
+
+    private aumentareVelocita(): void {
+        const valoreIncremento = 0.2;
+        
+        this.velocitaCorrente += valoreIncremento;
+        
+        if (this.velocitaCorrente > this.velocitaMassima) {
+            this.velocitaCorrente = this.velocitaMassima;
+        }
     }
 }
