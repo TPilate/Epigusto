@@ -6,7 +6,6 @@ export class Game extends Phaser.Scene {
     background!: Phaser.GameObjects.Image;
     gameText!: Phaser.GameObjects.Text;
     player!: Phaser.Physics.Arcade.Sprite;
-    physics!: Phaser.Physics.Arcade.ArcadePhysics;
 
 
     constructor() {
@@ -23,8 +22,6 @@ export class Game extends Phaser.Scene {
     }
 
     create() {
-        console.log(this.physics);
-
         this.background = this.add.image(512, 384, 'background');
         this.background.setAlpha(0.5);
         this.player = this.physics.add.sprite(500, 750, 'player');
@@ -49,23 +46,4 @@ export class Game extends Phaser.Scene {
     changeScene() {
         this.scene.start('GameOver');
     }
-
-
-
-
 }
-
-const config: Phaser.Types.Core.GameConfig = {
-    type: Phaser.AUTO,
-    width: 800,
-    height: 600,
-    physics: {
-        default: 'arcade',
-        arcade: {
-            gravity: { x: 0, y: 300 },
-            debug: false
-        }
-    },
-    scene: [Game]
-};
-new Phaser.Game(config);
