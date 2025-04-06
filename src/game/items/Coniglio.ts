@@ -10,7 +10,7 @@ export class Coniglio {
     }
 
     inizia() {
-        this.giocoVelocita = this.giocoVelocita * 2;
+        this.giocoVelocita = this.giocoVelocita + 0.3;
         return this.giocoVelocita;
     }
 }
