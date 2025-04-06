@@ -278,7 +278,7 @@ export class Game extends Phaser.Scene {
         });
 
         this.time.addEvent({
-            delay: 1250, 
+            delay: 950, 
             callback: this.generaMoneteRandom,
             callbackScope: this,
             loop: true
