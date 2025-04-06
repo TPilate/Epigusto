@@ -278,7 +278,7 @@ export class Game extends Phaser.Scene {
         });
 
         this.time.addEvent({
-            delay: 800, 
+            delay: 1250, 
             callback: this.generaMoneteRandom,
             callbackScope: this,
             loop: true
@@ -901,6 +901,13 @@ export class Game extends Phaser.Scene {
                 for (let i = 0; i < numeroPezzi; i++) {
                     this.creaPezzo(startX + (i * 40), y - (i * 40));
                 }
+            } else if (Math.random() < 0.2) { 
+                const y = this.cameras.main.height - Phaser.Math.Between(100, 250);
+                const numCoins = Phaser.Math.Between(8, 15); // Longue rangée
+                
+                for (let i = 0; i < numCoins; i++) {
+                    this.creaPezzo(this.cameras.main.width + 50 + (i * 30), y);
+                }
             } else {
                 const rayon = 50;
                 for (let i = 0; i < numeroPezzi; i++) {
@@ -912,13 +919,6 @@ export class Game extends Phaser.Scene {
             }
         }
         
-        if (Math.random() < 0.2) { 
-            const y = this.cameras.main.height - Phaser.Math.Between(100, 250);
-            const numCoins = Phaser.Math.Between(8, 15); // Longue rangée
-            
-            for (let i = 0; i < numCoins; i++) {
-                this.creaPezzo(this.cameras.main.width + 50 + (i * 30), y);
-            }
-        }
+
     }
 }
