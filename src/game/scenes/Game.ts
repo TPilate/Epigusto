@@ -366,6 +366,7 @@ export class Game extends Phaser.Scene {
 
         this.tempoDiRigenerazione += delta;
         if (this.tempoDiRigenerazione >= 300) {
+            this.luogoOstacolo();
             this.tempoDiRigenerazione = 0;
         }
 
