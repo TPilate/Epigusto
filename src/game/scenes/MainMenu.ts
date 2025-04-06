@@ -21,20 +21,36 @@ export class MainMenu extends Scene {
         this.load.image('input-bg', './assets/immissione_del_nome.png');
         this.load.image('button-bg', './assets/pulsante_di_avvio.png');
         this.load.audio('temaMenu', 'assets/audio/temaMenu.m4a');
+        this.load.image('lodobolo', './assets/lodobolo.png');
 
     }
 
     create() {
-
-
         this.background = this.add.image(512, 384, 'background');
+        this.logo = this.add.image(512, 250, 'logo').setDepth(10);
+        this.logoTween = this.tweens.add({
+            targets: this.logo,
+            y: this.logo.y + 15,
+            duration: 1500,
+            ease: 'Sine.easeInOut',
+            yoyo: true,
+            repeat: -1
+        });
+        
         this.creaInputNome();
         this.caricaNomeGiocatore();
-
-        this.logo = this.add.image(512, 300, 'logo').setDepth(100);
-
         this.events.on('shutdown', this.handleShutdown, this);
         EventBus.emit('current-scene-ready', this);
+        
+        if (!this.sound.get('temaMenu')) {
+            this.sound.play('temaMenu', { loop: true, volume: 0.7 });
+        }
+    }
+
+    stopBackgroundMusic() {
+        if (this.sound.get('temaMenu')) {
+            this.sound.stopByKey('temaMenu');
+        }
     }
 
     creaInputNome() {
@@ -132,8 +148,7 @@ export class MainMenu extends Scene {
             this.logoTween.stop();
             this.logoTween = null;
         }
-
-
+        this.stopBackgroundMusic();
         this.rimuoviElementiInput();
         this.scene.start('Game');
     }
