@@ -62,7 +62,7 @@ export class Game extends Phaser.Scene {
         this.load.image('pezzo', 'assets/pezzo.png');
         this.load.image('cuore', 'assets/cuore.png');
         this.load.atlas('carattere', './assets/PersonaggioFoglioSprite.png', './assets/PersonaggioFoglio.json');
-        this.load.atlas('coin', './assets/coin.png', './assets/coin.json');
+        this.load.atlas('animaPezzo', './assets/animaPezzo.png', './assets/animaPezzo.json');
 
         this.load.spritesheet('trappola', 'assets/trappola_per_orsi.png', {
             frameWidth: 16,
@@ -121,7 +121,7 @@ export class Game extends Phaser.Scene {
 
         this.anims.create({
             key: 'rotate',
-            frames: this.anims.generateFrameNames('coin', { prefix: 'coin', end: 8, zeroPad: 2 }),
+            frames: this.anims.generateFrameNames('animaPezzo', { prefix: 'coin', end: 8, zeroPad: 2 }),
             frameRate: 8,
         });
 
@@ -328,25 +328,25 @@ export class Game extends Phaser.Scene {
         trappola.setData('hasCollided', false);
 
         if (Math.random() < 0.4) {
-            this.creaCoin(positionX);
+            this.creaPezzo(positionX);
         }
     }
 
-    creaCoin(positionX: number) {
-        const coin = this.physics.add.sprite(
+    creaPezzo(positionX: number) {
+        const pezzo = this.physics.add.sprite(
             positionX,
             this.cameras.main.height - 57 - Phaser.Math.Between(50, 200), 
-            'coin'
+            'animaPezzo'
         );
         
-        coin.play('rotate', true);
-        this.monete.add(coin);
-        coin.setScale(0.2);
-        coin.setSize(50, 50);
+        pezzo.play('rotate', true);
+        this.monete.add(pezzo);
+        pezzo.setScale(0.2);
+        pezzo.setSize(50, 50);
         
-        coin.setImmovable(true);
-        coin.body.setAllowGravity(false);
-        coin.setData('collected', false);
+        pezzo.setImmovable(true);
+        pezzo.body.setAllowGravity(false);
+        pezzo.setData('collected', false);
     }
 
     collisioneTrappola(ostacolo: Phaser.Physics.Arcade.Sprite) {
@@ -377,12 +377,12 @@ export class Game extends Phaser.Scene {
         }
     }
 
-    collisioneCoin(giocatore: Phaser.Physics.Arcade.Sprite, coin: Phaser.Physics.Arcade.Sprite) {
-        if (coin.getData('collected')) {
+    collisionePezzo(giocatore: Phaser.Physics.Arcade.Sprite, pezzo: Phaser.Physics.Arcade.Sprite) {
+        if (pezzo.getData('collected')) {
             return;
         }
 
-        coin.setData('collected', true);
+        pezzo.setData('collected', true);
         
         // Play sound effect
         this.sonoPieca.play();
@@ -392,22 +392,20 @@ export class Game extends Phaser.Scene {
         this.punteggioTarget = this.punteggio;
         this.testoPunteggio.setText('' + this.punteggio);
         
-        // Animate coin collection
         this.tweens.add({
-            targets: coin,
-            y: coin.y - 50,
+            targets: pezzo,
+            y: pezzo.y - 50,
             alpha: 0,
             scale: 0.5,
             duration: 300,
             onComplete: () => {
-                coin.destroy();
+                pezzo.destroy();
             }
         });
     }
 
 
     inizializzaCollisione() {
-        // Fix trap collision detection
         this.physics.add.overlap(
             this.Giocatore,
             this.ostacolo,
@@ -416,12 +414,11 @@ export class Game extends Phaser.Scene {
             }
         );
 
-        // Fix coin collision detection - this was incorrect before
         this.physics.add.overlap(
             this.Giocatore,
             this.monete,
             (giocatore, moneta) => {
-                this.collisioneCoin(giocatore as Phaser.Physics.Arcade.Sprite, moneta as Phaser.Physics.Arcade.Sprite);
+                this.collisionePezzo(giocatore as Phaser.Physics.Arcade.Sprite, moneta as Phaser.Physics.Arcade.Sprite);
             }
         );
     }
@@ -444,8 +441,7 @@ export class Game extends Phaser.Scene {
 
         Phaser.Actions.IncX(this.ostacolo.getChildren(), -this.velocitaCorrente * 3);
         
-        // Ajout: Déplace également les pièces à la même vitesse que les obstacles
-        Phaser.Actions.IncX(this.monete.getChildren(), -this.velocitaCorrente * 3);
+        Phaser.Actions.IncX(this.monete.getChildren(), -this.velocitaCorrente);
 
         if (this.ostacolo.getLength() > 0) {
             let ostacoloPiuLontano = 0;
@@ -598,7 +594,7 @@ export class Game extends Phaser.Scene {
     private aggiornaMonete(): void {
         this.monete.getChildren().forEach((child) => {
             const moneta = child as Phaser.Physics.Arcade.Sprite;
-            moneta.x -= this.velocitaCorrente;
+            moneta.x -= this.velocitaCorrente ;
 
             if (moneta.x < -moneta.displayWidth) {
                 moneta.destroy();
