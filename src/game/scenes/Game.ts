@@ -30,10 +30,13 @@ export class Game extends Phaser.Scene {
     tempoDiRigenerazione: number;
     nomeUtente: string;
     private animazioneCassaAttiva: boolean = false;
+    private ultimoOstacoloX: number = 0;
+    private distanzaMinima: number = 0;
+    private difficoltaCorrente: number = 1;
 
     constructor() {
         super('Game');
-        this.velocitaCorrente = 0.5;
+        this.velocitaCorrente = 1;
         this.punteggio = 0;
         this.punteggioTarget = 0;
         this.incrementoPunteggio = 2;
@@ -66,6 +69,8 @@ export class Game extends Phaser.Scene {
     }
 
     create() {
+        this.physics.world.createDebugGraphic();
+
         this.casse = this.physics.add.group();
         this.nomeUtente = localStorage.getItem("playerName") || "";
         this.camera = this.cameras.main;
@@ -220,6 +225,18 @@ export class Game extends Phaser.Scene {
         this.inizializzaCollisione()
         this.uovoDiPasqua()
         EventBus.emit('current-scene-ready', this);
+
+        this.ultimoOstacoloX = 0;
+        this.distanzaMinima = 600;
+        this.difficoltaCorrente = 1;
+        
+        // Ajouter un timer pour augmenter progressivement la difficulté
+        this.time.addEvent({
+            delay: 10000, // 10 secondes
+            callback: this.aumentareDifficolta,
+            callbackScope: this,
+            loop: true
+        });
     }
 
     uovoDiPasqua() {
@@ -231,27 +248,66 @@ export class Game extends Phaser.Scene {
         }
     }
 
-    posizionaOstacolo() {
-        const numeroOstacolo = Math.floor(Math.random() * 7) + 1;
-
-        if (numeroOstacolo > 6 && numeroOstacolo < 8) {
-            const trappola = this.physics.add.sprite(
-                this.cameras.main.width,
-                this.cameras.main.height - 60,
-                'trappola'
-            );
-
-            trappola.setFrame(0);
-            this.ostacolo.add(trappola);
-            trappola.setScale(4);
-            trappola.setSize(20, 8);
-
-            trappola.setImmovable(true);
-            trappola.body.setAllowGravity(false);
-            trappola.setData('hasCollided', false);
-        } else {
-            return
+    luogoOstacolo() {
+        // Vérifier si la distance minimale est respectée
+        const distanzaNecessaria = this.distanzaMinima;
+        const ultimaPosizione = this.ultimoOstacoloX;
+        const posizioneCorrente = this.cameras.main.width;
+        
+        if (posizioneCorrente - ultimaPosizione < distanzaNecessaria) {
+            return; // Trop proche du dernier obstacle, on ne génère rien
         }
+        
+        // Probabilité basée sur la difficulté
+        // Plus la difficulté est élevée, plus la probabilité d'apparition est grande
+        const probabilitaBase = 0.15; // Probabilité de base à difficulté 1
+        const probabilitaAttuale = Math.min(probabilitaBase * this.difficoltaCorrente, 0.7);
+        
+        if (Math.random() > probabilitaAttuale) {
+            return; // Pas d'obstacle cette fois-ci
+        }
+        
+        // Déterminer si on génère un ou deux pièges
+        // Plus la difficulté est élevée, plus la probabilité d'avoir deux pièges augmente
+        const probabilitaDoppio = Math.min(0.1 * this.difficoltaCorrente, 0.5);
+        const numeroPiege = Math.random() < probabilitaDoppio ? 2 : 1;
+        
+        // Position pour le premier piège (et le seul si numeroPiege = 1)
+        this.creaPiege(this.cameras.main.width);
+        
+        // Si on doit générer un deuxième piège, on le place avec un écart
+        if (numeroPiege === 2) {
+            // Distance entre les deux pièges, adaptée à la vitesse du jeu
+            // Moins d'espace à haute vitesse pour augmenter la difficulté tout en gardant le jeu jouable
+            const distanzaTraPiege = 300 - (this.velocitaCorrente * 10);
+            this.creaPiege(this.cameras.main.width + distanzaTraPiege);
+        }
+        
+        // Enregistrer la position du piège le plus à droite
+        this.ultimoOstacoloX = this.cameras.main.width + (numeroPiege === 2 ? 200 - (this.velocitaCorrente * 10) : 0);
+        
+        // Ajuster la distance minimale en fonction de la vitesse
+        this.distanzaMinima = 600 - (this.velocitaCorrente * 50);
+        // Assurer une distance minimale raisonnable
+        this.distanzaMinima = Math.max(this.distanzaMinima, 300);
+    }
+
+    // Nouvelle méthode auxiliaire pour créer un piège à une position donnée
+    creaPiege(positionX: number) {
+        const trappola = this.physics.add.sprite(
+            positionX, 
+            this.cameras.main.height - 57,
+            'trappola'
+        );
+        
+        trappola.setFrame(0);
+        this.ostacolo.add(trappola);
+        trappola.setScale(4);
+        trappola.setSize(15, 5);
+
+        trappola.setImmovable(true);
+        trappola.body.setAllowGravity(false);
+        trappola.setData('hasCollided', false);
     }
 
     collisioneTrappola(ostacolo: Phaser.Physics.Arcade.Sprite) {
@@ -306,13 +362,27 @@ export class Game extends Phaser.Scene {
             });
         }
 
-        Phaser.Actions.IncX(this.ostacolo.getChildren(), -this.velocitaCorrente * 3)
+        Phaser.Actions.IncX(this.ostacolo.getChildren(), -this.velocitaCorrente * 3);
 
-        this.tempoDiRigenerazione += delta * this.velocitaCorrente * 0.05 / 10;
-        if (this.tempoDiRigenerazione >= 2000) {
-            if (Math.random() < 0.6) {
-                this.posizionaOstacolo();
+        if (this.ostacolo.getLength() > 0) {
+            let ostacoloPiuLontano = 0;
+            this.ostacolo.getChildren().forEach((child) => {
+                const ostacolo = child as Phaser.Physics.Arcade.Sprite;
+                if (ostacolo.x > ostacoloPiuLontano) {
+                    ostacoloPiuLontano = ostacolo.x;
+                }
+            });
+            
+            if (ostacoloPiuLontano > 0) {
+                this.ultimoOstacoloX = ostacoloPiuLontano;
+            } else {
+                this.ultimoOstacoloX = 0;
             }
+        }
+
+        this.tempoDiRigenerazione += delta;
+        if (this.tempoDiRigenerazione >= 300) { // Vérifier plus souvent (300ms)
+            this.luogoOstacolo();
             this.tempoDiRigenerazione = 0;
         }
 
@@ -653,6 +723,14 @@ export class Game extends Phaser.Scene {
 
                 BonusFenice.attivaInvincibilita();
                 break;
+        }
+    }
+
+    private aumentareDifficolta(): void {
+        this.difficoltaCorrente += 0.2;
+        // Limiter la difficulté maximale
+        if (this.difficoltaCorrente > 5) {
+            this.difficoltaCorrente = 5;
         }
     }
 }
