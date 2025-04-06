@@ -354,6 +354,14 @@ export class Game extends Phaser.Scene {
         
         pezzo.setImmovable(true);
         pezzo.body.setAllowGravity(false);
+        
+        if (pezzo.body) {
+            (pezzo.body as Phaser.Physics.Arcade.Body).checkCollision.up = false;
+            (pezzo.body as Phaser.Physics.Arcade.Body).checkCollision.down = false;
+            (pezzo.body as Phaser.Physics.Arcade.Body).checkCollision.left = false;
+            (pezzo.body as Phaser.Physics.Arcade.Body).checkCollision.right = false;
+        }
+        
         pezzo.setData('collected', false);
     }
 
@@ -583,6 +591,13 @@ export class Game extends Phaser.Scene {
 
         cassa.setImmovable(true);
         cassa.body.allowGravity = false;
+        
+        if (cassa.body) {
+            (cassa.body as Phaser.Physics.Arcade.Body).checkCollision.up = false;
+            (cassa.body as Phaser.Physics.Arcade.Body).checkCollision.down = false;
+            (cassa.body as Phaser.Physics.Arcade.Body).checkCollision.left = false;
+            (cassa.body as Phaser.Physics.Arcade.Body).checkCollision.right = false;
+        }
     }
 
     private aggiornaCasse(): void {
