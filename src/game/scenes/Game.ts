@@ -82,6 +82,14 @@ export class Game extends Phaser.Scene {
         this.load.audio('sonoPieca', 'assets/audio/pieca.m4a');
     }
     create() {
+        this.velocitaCorrente = 1;
+        this.punteggio = 0;
+        this.punteggioTarget = 0;
+        this.incrementoPunteggio = 2;
+        this.vita = 3;
+        this.tempoDiRigenerazione = 0;
+        this.animazioneCassaAttiva = false;
+
         this.casse = this.physics.add.group();
         this.nomeUtente = localStorage.getItem("playerName") || "";
         this.camera = this.cameras.main;
@@ -354,6 +362,14 @@ export class Game extends Phaser.Scene {
         
         pezzo.setImmovable(true);
         pezzo.body.setAllowGravity(false);
+        
+        if (pezzo.body) {
+            (pezzo.body as Phaser.Physics.Arcade.Body).checkCollision.up = false;
+            (pezzo.body as Phaser.Physics.Arcade.Body).checkCollision.down = false;
+            (pezzo.body as Phaser.Physics.Arcade.Body).checkCollision.left = false;
+            (pezzo.body as Phaser.Physics.Arcade.Body).checkCollision.right = false;
+        }
+        
         pezzo.setData('collected', false);
     }
 
@@ -539,12 +555,8 @@ export class Game extends Phaser.Scene {
         this.forestaSono.stop();
         this.temaPrincipale.stop();
         this.temaMorte.play();
-        this.time.delayedCall(5000, () => {
-            this.scene.start('GameOver');
-        });
-
-
-
+        
+        // Sauvegarde le score
         const infoGiocatore = JSON.stringify({
             name: this.nomeUtente,
             score: this.punteggio
@@ -556,14 +568,10 @@ export class Game extends Phaser.Scene {
         }
 
         localStorage.setItem(`playerInfo${prossimoIndice}`, infoGiocatore);
-
-
-        this.velocitaCorrente = 0.5;
-        this.punteggio = 0;
-        this.punteggioTarget = 0;
-        this.incrementoPunteggio = 2;
-        this.vita = 3;
-        this.tempoDiRigenerazione = 0;
+        
+        this.time.delayedCall(5000, () => {
+            this.scene.start('GameOver');
+        });
     }
 
     private aumentaVelocita(): void {
@@ -598,6 +606,13 @@ export class Game extends Phaser.Scene {
         });
         cassa.setImmovable(true);
         cassa.body.allowGravity = false;
+        
+        if (cassa.body) {
+            (cassa.body as Phaser.Physics.Arcade.Body).checkCollision.up = false;
+            (cassa.body as Phaser.Physics.Arcade.Body).checkCollision.down = false;
+            (cassa.body as Phaser.Physics.Arcade.Body).checkCollision.left = false;
+            (cassa.body as Phaser.Physics.Arcade.Body).checkCollision.right = false;
+        }
     }
 
     private aggiornaCasse(): void {
