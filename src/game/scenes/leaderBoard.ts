@@ -31,12 +31,15 @@ export class LeaderBoard extends Scene
         let indice = 1;
         while (localStorage.getItem(`playerInfo${indice}`)) {
             try {
-            const datiGiocatore = JSON.parse(localStorage.getItem(`playerInfo${indice}`));
-            punteggiGiocatori.push({
-                nome: datiGiocatore.name,
-                punteggio: datiGiocatore.score,
-                indice: indice
-            });
+            const playerData = localStorage.getItem(`playerInfo${indice}`);
+            if (playerData) {
+                const datiGiocatore = JSON.parse(playerData);
+                punteggiGiocatori.push({
+                    nome: datiGiocatore.name,
+                    punteggio: datiGiocatore.score,
+                    indice: indice
+                });
+            }
             } catch (e) {
             console.error("Errore nell'analisi dei dati del giocatore:", e);
             }
@@ -48,8 +51,8 @@ export class LeaderBoard extends Scene
             const posY = 250 + (i * 50);
             // Add board image as background for each entry
             const board = this.add.image(512, posY, 'board').setDisplaySize(400, 80);
-            this.add.text(350, posY, giocatore.nome, { fontSize: '24px', color: '#000' }).setOrigin(0, 0.5);
-            this.add.text(600, posY, giocatore.punteggio.toString(), { fontSize: '24px', color: '#000' }).setOrigin(0, 0.5);
+            this.add.text(350, posY, giocatore.nome, { fontFamily:'minecraft', fontSize: '24px', color: '#000' }).setOrigin(0, 0.5);
+            this.add.text(600, posY, giocatore.punteggio.toString(), { fontFamily:'minecraft', fontSize: '24px', color: '#000' }).setOrigin(0, 0.5);
         });
         const pulsanteRiprova = this.add.image(512, 600, 'reload').setInteractive();
         pulsanteRiprova.on('pointerdown', () => this.changeScene());
