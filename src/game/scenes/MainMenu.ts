@@ -47,6 +47,8 @@ export class MainMenu extends Scene
         this.inputNome.type = 'text';
         this.inputNome.placeholder = 'Enter your name';
         this.inputNome.id = 'player-name-input';
+        this.inputNome.maxLength = 10;
+        this.inputNome.minLength = 3;
         
         this.pulsanteInvio = document.createElement('button');
         this.pulsanteInvio.textContent = 'Start Game';

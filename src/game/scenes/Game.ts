@@ -353,10 +353,32 @@ export class Game extends Phaser.Scene {
 
     cambiaScena() {
         this.Giocatore.play('death', true);
-
-        this.time.delayedCall(1000, () => {
+        
+        this.time.delayedCall(5000, () => {
             this.scene.start('GameOver');
         });
+        
+
+        
+        const playerInfo = JSON.stringify({
+            name: this.nomeUtente,
+            score: this.punteggio
+        });
+
+        let nextIndex = 1;
+        while (localStorage.getItem(`playerInfo${nextIndex}`)) {
+            nextIndex++;
+        }
+
+        localStorage.setItem(`playerInfo${nextIndex}`, playerInfo);
+
+        
+        this.velocitaCorrente = 0.5;
+        this.punteggio = 0;
+        this.punteggioTarget = 0;
+        this.incrementoPunteggio = 2;
+        this.vita = 3;
+        this.tempoDiRigenerazione = 0;
     }
 
     private aumentareVelocita(): void {
