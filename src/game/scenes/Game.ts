@@ -370,27 +370,27 @@ export class Game extends Phaser.Scene {
 
     private generaCassa(): void {
         const y = Phaser.Math.Between(this.cameras.main.height - 325, this.cameras.main.height - 250);
-        const crate = this.casse.create(this.cameras.main.width + 100, y, 'crate');
-        crate.setOrigin(0, 0);
-        crate.setScale(3);
+        const cassa = this.casse.create(this.cameras.main.width + 100, y, 'crate');
+        cassa.setOrigin(0, 0);
+        cassa.setScale(3);
 
-        crate.setImmovable(true);
-        crate.body.allowGravity = false;
+        cassa.setImmovable(true);
+        cassa.body.allowGravity = false;
     }
 
     private aggiornareCasse(): void {
         this.casse.getChildren().forEach((child) => {
-            const crate = child as Phaser.Physics.Arcade.Sprite;
+            const cassa = child as Phaser.Physics.Arcade.Sprite;
 
-            crate.x -= this.velocitaCorrente * 3;
+            cassa.x -= this.velocitaCorrente * 3;
 
-            if (crate.x < -crate.displayWidth) {
-                crate.destroy();
+            if (cassa.x < -cassa.displayWidth) {
+                cassa.destroy();
             }
         });
     }
 
-    private suPlayerCrateCollision(player: Phaser.GameObjects.GameObject, crate: Phaser.GameObjects.GameObject): void {
+    private suPlayerCrateCollision(player: Phaser.GameObjects.GameObject, cassa: Phaser.GameObjects.GameObject): void {
         const PezzoBonus = new Pezzo({
             velocitaAttuale: this.velocitaCorrente,
             aggiornaPunteggio: this.punteggio
@@ -402,7 +402,7 @@ export class Game extends Phaser.Scene {
         this.punteggioTarget = nuovoCore;
         this.testoPunteggio.setText('' + this.punteggio);
         
-        (crate as Phaser.Physics.Arcade.Sprite).destroy();
+        (cassa as Phaser.Physics.Arcade.Sprite).destroy();
 
         const cuoreBonus = new Cuore({
             cuore: this.vita
@@ -453,6 +453,6 @@ export class Game extends Phaser.Scene {
         
         FeniceBonus.attivaInvincibilita();
             
-        crate.destroy();
+        cassa.destroy();
     }
 }
