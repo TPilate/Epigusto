@@ -300,7 +300,7 @@ export class Game extends Phaser.Scene {
         const posizioneCorrente = this.cameras.main.width;
         
         if (posizioneCorrente - ultimaPosizione < distanzaNecessaria) {
-            return;
+            return; 
         }
         
         const probabilitaBase = 0.15; 
@@ -314,11 +314,11 @@ export class Game extends Phaser.Scene {
         const probabilitaDoppio = Math.min(0.1 * this.difficoltaCorrente, 0.5);
         const numeroPiege = Math.random() < probabilitaDoppio ? 2 : 1;
         
-        this.creaPiege(this.cameras.main.width);
+        this.creaTrampa(this.cameras.main.width);
         
         if (numeroPiege === 2) {
-            const distanzaTraPiege = 300 - (this.velocitaCorrente * 10);
-            this.creaPiege(this.cameras.main.width + distanzaTraPiege);
+            const distanzaTraTrappe = 300 - (this.velocitaCorrente * 10);
+            this.creaTrampa(this.cameras.main.width + distanzaTraTrappe);
         }
         
         this.ultimoOstacoloX = this.cameras.main.width + (numeroPiege === 2 ? 200 - (this.velocitaCorrente * 10) : 0);
@@ -327,50 +327,50 @@ export class Game extends Phaser.Scene {
         this.distanzaMinima = Math.max(this.distanzaMinima, 300);
     }
 
-    creaPiege(positionX: number) {
-        const trappola = this.physics.add.sprite(
-            positionX, 
+    creaTrampa(posizioneX: number) {
+        const trampa = this.physics.add.sprite(
+            posizioneX, 
             this.cameras.main.height - 57,
             'trappola'
         );
         
-        trappola.setFrame(0);
-        this.ostacolo.add(trappola);
-        trappola.setScale(4);
-        trappola.setSize(15, 5);
+        trampa.setFrame(0);
+        this.ostacolo.add(trampa);
+        trampa.setScale(4);
+        trampa.setSize(15, 5);
 
-        trappola.setImmovable(true);
-        trappola.body.setAllowGravity(false);
-        trappola.setData('hasCollided', false);
+        trampa.setImmovable(true);
+        trampa.body.setAllowGravity(false);
+        trampa.setData('haColpito', false);
 
         if (Math.random() < 0.4) {
-            this.creaPezzo(positionX);
+            this.creaMoneta(posizioneX);
         }
     }
 
-    creaPezzo(positionX: number, positionY?: number): void {
-        const pezzo = this.physics.add.sprite(
-            positionX,
-            positionY || this.cameras.main.height - 57 - Phaser.Math.Between(50, 200),
+    creaMoneta(posizioneX: number, posizioneY?: number): void {
+        const moneta = this.physics.add.sprite(
+            posizioneX,
+            posizioneY || this.cameras.main.height - 57 - Phaser.Math.Between(50, 200),
             'animaPezzo'
         );
         
-        pezzo.play('rotate', true);
-        this.monete.add(pezzo);
-        pezzo.setScale(0.3); 
-        pezzo.setSize(50, 50);
+        moneta.play('rotate', true);
+        this.monete.add(moneta);
+        moneta.setScale(0.3); 
+        moneta.setSize(50, 50);
         
-        pezzo.setImmovable(true);
-        pezzo.body.setAllowGravity(false);
+        moneta.setImmovable(true);
+        moneta.body.setAllowGravity(false);
         
-        if (pezzo.body) {
-            (pezzo.body as Phaser.Physics.Arcade.Body).checkCollision.up = false;
-            (pezzo.body as Phaser.Physics.Arcade.Body).checkCollision.down = false;
-            (pezzo.body as Phaser.Physics.Arcade.Body).checkCollision.left = false;
-            (pezzo.body as Phaser.Physics.Arcade.Body).checkCollision.right = false;
+        if (moneta.body) {
+            (moneta.body as Phaser.Physics.Arcade.Body).checkCollision.up = false;
+            (moneta.body as Phaser.Physics.Arcade.Body).checkCollision.down = false;
+            (moneta.body as Phaser.Physics.Arcade.Body).checkCollision.left = false;
+            (moneta.body as Phaser.Physics.Arcade.Body).checkCollision.right = false;
         }
         
-        pezzo.setData('collected', false);
+        moneta.setData('collected', false);
     }
 
     collisioneTrappola(ostacolo: Phaser.Physics.Arcade.Sprite) {
@@ -891,15 +891,15 @@ export class Game extends Phaser.Scene {
             
             if (tipoFormazione < 0.25) {
                 for (let i = 0; i < numeroPezzi; i++) {
-                    this.creaPezzo(startX + (i * 40), y);
+                    this.creaMoneta(startX + (i * 40), y);
                 }
             } else if (tipoFormazione < 0.5) {
                 for (let i = 0; i < numeroPezzi; i++) {
-                    this.creaPezzo(startX, y - (i * 40));
+                    this.creaMoneta(startX, y - (i * 40));
                 }
             } else if (tipoFormazione < 0.75) {
                 for (let i = 0; i < numeroPezzi; i++) {
-                    this.creaPezzo(startX + (i * 40), y - (i * 40));
+                    this.creaMoneta(startX + (i * 40), y - (i * 40));
                 }
             } else {
                 const rayon = 50;
@@ -907,7 +907,7 @@ export class Game extends Phaser.Scene {
                     const angolo = (i / numeroPezzi) * Math.PI * 2;
                     const offsetX = Math.cos(angolo) * rayon;
                     const offsetY = Math.sin(angolo) * rayon;
-                    this.creaPezzo(startX + offsetX, y + offsetY);
+                    this.creaMoneta(startX + offsetX, y + offsetY);
                 }
             }
         }
@@ -917,7 +917,7 @@ export class Game extends Phaser.Scene {
             const numCoins = Phaser.Math.Between(8, 15); // Longue rangée
             
             for (let i = 0; i < numCoins; i++) {
-                this.creaPezzo(this.cameras.main.width + 50 + (i * 30), y);
+                this.creaMoneta(this.cameras.main.width + 50 + (i * 30), y);
             }
         }
     }
