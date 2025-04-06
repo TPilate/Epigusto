@@ -69,8 +69,6 @@ export class Game extends Phaser.Scene {
     }
 
     create() {
-        this.physics.world.createDebugGraphic();
-
         this.casse = this.physics.add.group();
         this.nomeUtente = localStorage.getItem("playerName") || "";
         this.camera = this.cameras.main;
@@ -713,7 +711,6 @@ export class Game extends Phaser.Scene {
 
     private aumentareDifficolta(): void {
         this.difficoltaCorrente += 0.2;
-        // Limiter la difficulté maximale
         if (this.difficoltaCorrente > 5) {
             this.difficoltaCorrente = 5;
         }
