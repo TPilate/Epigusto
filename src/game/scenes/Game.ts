@@ -441,7 +441,7 @@ export class Game extends Phaser.Scene {
 
         Phaser.Actions.IncX(this.ostacolo.getChildren(), -this.velocitaCorrente * 3);
         
-        Phaser.Actions.IncX(this.monete.getChildren(), -this.velocitaCorrente);
+        Phaser.Actions.IncX(this.monete.getChildren(), -this.velocitaCorrente * 2);
 
         if (this.ostacolo.getLength() > 0) {
             let ostacoloPiuLontano = 0;
