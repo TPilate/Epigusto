@@ -45,7 +45,7 @@ export class Preloader extends Scene
 
         this.anims.create({
             key: 'phoenix_fly',
-            frames: this.anims.generateFrameNumbers('phoenix', { start: 0, end: 5 }),
+            frames: this.anims.generateFrameNumbers('fenice', { start: 0, end: 5 }),
             frameRate: 10,
             repeat: -1
         });
