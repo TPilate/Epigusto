@@ -4,6 +4,7 @@ import { Pezzo } from '../items/Pezzo';
 import { Cuore } from '../items/Cuore';
 import { Coniglio } from '../items/Coniglio';
 import { Tartaruga } from '../items/Tartaruga';
+import { Phoenix } from '../items/Phoenix';
 
 export class Game extends Phaser.Scene {
     camera: Phaser.Cameras.Scene2D.Camera;
@@ -253,6 +254,10 @@ export class Game extends Phaser.Scene {
             ostacolo.destroy();
         });
         
+        if (this.Giocatore.getData('invincible')) {
+            return;
+        }
+        
         this.vita -= 1;
         this.testoVita.setText('' + this.vita);
         
@@ -364,7 +369,7 @@ export class Game extends Phaser.Scene {
     }
 
     private generaCassa(): void {
-        const y = Phaser.Math.Between(this.cameras.main.height - 375, this.cameras.main.height - 250);
+        const y = Phaser.Math.Between(this.cameras.main.height - 325, this.cameras.main.height - 250);
         const crate = this.casse.create(this.cameras.main.width + 100, y, 'crate');
         crate.setOrigin(0, 0);
         crate.setScale(3);
@@ -386,62 +391,68 @@ export class Game extends Phaser.Scene {
     }
 
     private suPlayerCrateCollision(player: Phaser.GameObjects.GameObject, crate: Phaser.GameObjects.GameObject): void {
-        const PezzoBonus = new Pezzo({
-            velocitaAttuale: this.velocitaCorrente,
-            aggiornaPunteggio: this.punteggio
+        // const PezzoBonus = new Pezzo({
+        //     velocitaAttuale: this.velocitaCorrente,
+        //     aggiornaPunteggio: this.punteggio
+        // });
+        
+        // const nuovoCore = PezzoBonus.inizia();
+        
+        // this.punteggio = nuovoCore;
+        // this.punteggioTarget = nuovoCore;
+        // this.testoPunteggio.setText('' + this.punteggio);
+        
+        // (crate as Phaser.Physics.Arcade.Sprite).destroy();
+
+        // const cuoreBonus = new Cuore({
+        //     cuore: this.vita
+        // })
+        
+        // const nuovoVita = cuoreBonus.inizia()
+        
+        // this.vita = nuovoVita;
+
+        // if (this.vita >= 10) {
+        //     this.vita = 9999
+        //     this.testoVita.setText('∞');
+        //     this.testoVita.setPosition(this.cameras.main.width - 80, 8);
+        // } else {
+        //     this.testoVita.setText('' + this.vita);
+        // }
+
+        // const coniglioInstance = new Coniglio({
+        //     giocoVelocita: this.velocitaCorrente
+        // });
+
+        // const velocitaOriginale = this.velocitaCorrente;
+        // this.velocitaCorrente = coniglioInstance.inizia();
+
+        // this.time.delayedCall(5000, () => {
+        //     this.velocitaCorrente = velocitaOriginale;
+        // }, [], this);
+
+
+        // const TartarugaBonus = new Tartaruga({
+        //     velocitaAttuale: this.velocitaCorrente,
+        // })
+
+        // const velocitaPrecedente = this.velocitaCorrente
+        // const nuovoVelocita = TartarugaBonus.inizia()
+
+        // this.velocitaCorrente = nuovoVelocita
+
+        // if (this.velocitaCorrente !== velocitaPrecedente) {
+        //     this.time.delayedCall(10000, () => {
+        //         this.velocitaCorrente = velocitaPrecedente;
+        //     }, [], this);
+        // }
+        const PhoenixBonus = new Phoenix({
+            scene: this,
+            player: this.Giocatore
         });
         
-        const nuovoCore = PezzoBonus.inizia();
-        
-        this.punteggio = nuovoCore;
-        this.punteggioTarget = nuovoCore;
-        this.testoPunteggio.setText('' + this.punteggio);
-        
-        (crate as Phaser.Physics.Arcade.Sprite).destroy();
-
-        const cuoreBonus = new Cuore({
-            cuore: this.vita
-        })
-        
-        const nuovoVita = cuoreBonus.inizia()
-        
-        this.vita = nuovoVita;
-
-        if (this.vita >= 10) {
-            this.vita = 9999
-            this.testoVita.setText('∞');
-            this.testoVita.setPosition(this.cameras.main.width - 80, 8);
-        } else {
-            this.testoVita.setText('' + this.vita);
-        }
-
-        const coniglioInstance = new Coniglio({
-            giocoVelocita: this.velocitaCorrente
-        });
-
-        const velocitaOriginale = this.velocitaCorrente;
-        this.velocitaCorrente = coniglioInstance.inizia();
-
-        this.time.delayedCall(5000, () => {
-            this.velocitaCorrente = velocitaOriginale;
-        }, [], this);
-
-
-        const TartarugaBonus = new Tartaruga({
-            velocitaAttuale: this.velocitaCorrente,
-        })
-
-        const velocitaPrecedente = this.velocitaCorrente
-        const nuovoVelocita = TartarugaBonus.inizia()
-
-        this.velocitaCorrente = nuovoVelocita
-
-        if (this.velocitaCorrente !== velocitaPrecedente) {
-            this.time.delayedCall(10000, () => {
-                this.velocitaCorrente = velocitaPrecedente;
-            }, [], this);
-        }
-        
+        PhoenixBonus.activateInvincibility();
+            
         crate.destroy();
     }
 }
