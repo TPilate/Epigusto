@@ -33,7 +33,10 @@ export class Game extends Phaser.Scene {
     private ultimoOstacoloX: number = 0;
     private distanzaMinima: number = 0;
     private difficoltaCorrente: number = 1;
-
+    forestaSono: any;
+    temaPrincipale: any;
+    saltareAudio: any;
+    danno: any;
     constructor() {
         super('Game');
         this.velocitaCorrente = 1;
@@ -65,7 +68,12 @@ export class Game extends Phaser.Scene {
         this.load.image('tartaruga', 'assets/tartaruga.png');
 
         this.load.image('crate', 'assets/cassa.png')
-        this.load.audio('crate-sound', 'sounds/apertura_del_caso.m4a');
+        this.load.audio('crate-sound', 'assets/audio/apertura_del_caso.m4a');
+        this.load.audio('foresta', 'assets/audio/foresta.mp3');
+        this.load.audio('temaPrincpale', 'assets/audio/temaPrincipale.mp3');
+        this.load.audio('saltare', 'assets/audio/saltare.m4a');
+        this.load.audio('danno', 'assets/audio/danno.m4a');
+
     }
 
     create() {
@@ -76,6 +84,16 @@ export class Game extends Phaser.Scene {
         this.sfondo = this.add.tileSprite(0, 0, this.cameras.main.width, this.cameras.main.height, 'sfondo');
         this.sfondo.setOrigin(0, 0);
         this.sfondo.setAlpha(0.5);
+
+
+
+        this.forestaSono = this.sound.add('foresta', { loop: true, volume: 0.2 });
+        this.forestaSono.play();
+        
+        this.temaPrincipale = this.sound.add('temaPrincpale', { loop: true, volume: 0.3 });
+        this.temaPrincipale.play();
+
+        this.saltareAudio = this.sound.add('saltare', { loop: false, volume: 0.5 });
 
         this.anims.create({
             key: "caratrappolaChiusa",
@@ -311,6 +329,7 @@ export class Game extends Phaser.Scene {
             return;
         }
 
+        this.danno.play();
         this.vita -= 1;
         this.testoVita.setText('' + this.vita);
 
@@ -375,6 +394,8 @@ export class Game extends Phaser.Scene {
 
         const giocatoreSulTerreno = this.Giocatore.body ? (this.Giocatore.body.touching.down || this.Giocatore.body.blocked.down) : false;
         if ((this.tasti?.spaceBar?.isDown || this.cursori?.space?.isDown || this.tasti?.z?.isDown || this.tasti?.w?.isDown || this.cursori?.up.isDown) && giocatoreSulTerreno) {
+            this.saltareAudio.play();
+
             this.Giocatore.setVelocityY(-600);
             this.Giocatore.play('jump', true);
             this.time.delayedCall(500, () => {
