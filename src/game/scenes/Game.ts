@@ -268,6 +268,13 @@ export class Game extends Phaser.Scene {
             callbackScope: this,
             loop: true
         });
+
+        this.time.addEvent({
+            delay: 800, 
+            callback: this.generaMoneteRandom,
+            callbackScope: this,
+            loop: true
+        });
     }
 
     uovoDiPasqua() {
@@ -291,6 +298,7 @@ export class Game extends Phaser.Scene {
         const probabilitaBase = 0.15; 
         const probabilitaAttuale = Math.min(probabilitaBase * this.difficoltaCorrente, 0.7);
         
+
         if (Math.random() > probabilitaAttuale) {
             return; 
         }
@@ -332,16 +340,16 @@ export class Game extends Phaser.Scene {
         }
     }
 
-    creaPezzo(positionX: number) {
+    creaPezzo(positionX: number, positionY?: number): void {
         const pezzo = this.physics.add.sprite(
             positionX,
-            this.cameras.main.height - 57 - Phaser.Math.Between(50, 200), 
+            positionY || this.cameras.main.height - 57 - Phaser.Math.Between(50, 200),
             'animaPezzo'
         );
         
         pezzo.play('rotate', true);
         this.monete.add(pezzo);
-        pezzo.setScale(0.2);
+        pezzo.setScale(0.3); 
         pezzo.setSize(50, 50);
         
         pezzo.setImmovable(true);
@@ -441,8 +449,6 @@ export class Game extends Phaser.Scene {
 
         Phaser.Actions.IncX(this.ostacolo.getChildren(), -this.velocitaCorrente * 3);
         
-        Phaser.Actions.IncX(this.monete.getChildren(), -this.velocitaCorrente * 2);
-
         if (this.ostacolo.getLength() > 0) {
             let ostacoloPiuLontano = 0;
             this.ostacolo.getChildren().forEach((child) => {
@@ -594,8 +600,8 @@ export class Game extends Phaser.Scene {
     private aggiornaMonete(): void {
         this.monete.getChildren().forEach((child) => {
             const moneta = child as Phaser.Physics.Arcade.Sprite;
-            moneta.x -= this.velocitaCorrente ;
-
+            moneta.x -= this.velocitaCorrente * 3; // Même vitesse que les obstacles
+            
             if (moneta.x < -moneta.displayWidth) {
                 moneta.destroy();
             }
@@ -837,6 +843,52 @@ export class Game extends Phaser.Scene {
         this.difficoltaCorrente += 0.2;
         if (this.difficoltaCorrente > 5) {
             this.difficoltaCorrente = 5;
+        }
+    }
+
+    private generaMoneteRandom(): void {
+        if (Math.random() < 0.9) { 
+            const numeroPezzi = Phaser.Math.Between(2, 5);
+            
+            const startX = this.cameras.main.width + 50;
+            
+            const hauteurMin = 80; 
+            const hauteurMax = 350; 
+            const hauteur = Phaser.Math.Between(hauteurMin, hauteurMax);
+            const y = this.cameras.main.height - hauteur;
+            
+            const tipoFormazione = Math.random();
+            
+            if (tipoFormazione < 0.25) {
+                for (let i = 0; i < numeroPezzi; i++) {
+                    this.creaPezzo(startX + (i * 40), y);
+                }
+            } else if (tipoFormazione < 0.5) {
+                for (let i = 0; i < numeroPezzi; i++) {
+                    this.creaPezzo(startX, y - (i * 40));
+                }
+            } else if (tipoFormazione < 0.75) {
+                for (let i = 0; i < numeroPezzi; i++) {
+                    this.creaPezzo(startX + (i * 40), y - (i * 40));
+                }
+            } else {
+                const rayon = 50;
+                for (let i = 0; i < numeroPezzi; i++) {
+                    const angolo = (i / numeroPezzi) * Math.PI * 2;
+                    const offsetX = Math.cos(angolo) * rayon;
+                    const offsetY = Math.sin(angolo) * rayon;
+                    this.creaPezzo(startX + offsetX, y + offsetY);
+                }
+            }
+        }
+        
+        if (Math.random() < 0.2) { 
+            const y = this.cameras.main.height - Phaser.Math.Between(100, 250);
+            const numCoins = Phaser.Math.Between(8, 15); // Longue rangée
+            
+            for (let i = 0; i < numCoins; i++) {
+                this.creaPezzo(this.cameras.main.width + 50 + (i * 30), y);
+            }
         }
     }
 }
