@@ -40,6 +40,8 @@ export class Game extends Phaser.Scene {
     danno: any;
     temaMorte: any;
     sonoPieca:any;
+    suoloCollisione: Phaser.Physics.Arcade.StaticBody;
+
     constructor() {
         super('Game');
         this.velocitaCorrente = 1;
@@ -283,6 +285,9 @@ export class Game extends Phaser.Scene {
             callbackScope: this,
             loop: true
         });
+
+        this.suoloCollisione = this.physics.add.staticBody(0, this.cameras.main.height - 30, this.cameras.main.width, 20);
+        this.physics.add.collider(this.Giocatore, this.suoloCollisione);
     }
 
     uovoDiPasqua() {
