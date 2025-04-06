@@ -4,7 +4,7 @@ import { Pezzo } from '../items/Pezzo';
 import { Cuore } from '../items/Cuore';
 import { Coniglio } from '../items/Coniglio';
 import { Tartaruga } from '../items/Tartaruga';
-import { Phoenix } from '../items/Phoenix';
+import { Fenice } from '../items/Fenice';
 
 export class Game extends Phaser.Scene {
     camera: Phaser.Cameras.Scene2D.Camera;
@@ -446,12 +446,12 @@ export class Game extends Phaser.Scene {
                 this.velocitaCorrente = velocitaPrecedente;
             }, [], this);
         }
-        const PhoenixBonus = new Phoenix({
+        const FeniceBonus = new Fenice({
             scene: this,
             player: this.Giocatore
         });
         
-        PhoenixBonus.activateInvincibility();
+        FeniceBonus.attivaInvincibilita();
             
         crate.destroy();
     }
