@@ -579,8 +579,23 @@ export class Game extends Phaser.Scene {
         const y = Phaser.Math.Between(this.cameras.main.height - 325, this.cameras.main.height - 250);
         const cassa = this.casse.create(this.cameras.main.width + 100, y, 'crate');
         cassa.setOrigin(0, 0);
-        cassa.setScale(3);
+        cassa.setScale(0.3);
 
+
+        // Set collision body properties for the crate
+        cassa.body.setSize(cassa.width * 0.8, cassa.height * 0.8);
+        cassa.body.setOffset(cassa.width * 0.1, cassa.height * 0.1);
+
+        // Add visual depth and shadow effect
+        cassa.setDepth(5);
+        this.tweens.add({
+            targets: cassa,
+            y: y + 10,
+            duration: 1000,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut'
+        });
         cassa.setImmovable(true);
         cassa.body.allowGravity = false;
     }
