@@ -230,9 +230,8 @@ export class Game extends Phaser.Scene {
         this.distanzaMinima = 600;
         this.difficoltaCorrente = 1;
         
-        // Ajouter un timer pour augmenter progressivement la difficulté
         this.time.addEvent({
-            delay: 10000, // 10 secondes
+            delay: 10000, 
             callback: this.aumentareDifficolta,
             callbackScope: this,
             loop: true
@@ -249,50 +248,37 @@ export class Game extends Phaser.Scene {
     }
 
     luogoOstacolo() {
-        // Vérifier si la distance minimale est respectée
         const distanzaNecessaria = this.distanzaMinima;
         const ultimaPosizione = this.ultimoOstacoloX;
         const posizioneCorrente = this.cameras.main.width;
         
         if (posizioneCorrente - ultimaPosizione < distanzaNecessaria) {
-            return; // Trop proche du dernier obstacle, on ne génère rien
+            return;
         }
         
-        // Probabilité basée sur la difficulté
-        // Plus la difficulté est élevée, plus la probabilité d'apparition est grande
-        const probabilitaBase = 0.15; // Probabilité de base à difficulté 1
+        const probabilitaBase = 0.15; 
         const probabilitaAttuale = Math.min(probabilitaBase * this.difficoltaCorrente, 0.7);
         
         if (Math.random() > probabilitaAttuale) {
-            return; // Pas d'obstacle cette fois-ci
+            return; 
         }
         
-        // Déterminer si on génère un ou deux pièges
-        // Plus la difficulté est élevée, plus la probabilité d'avoir deux pièges augmente
         const probabilitaDoppio = Math.min(0.1 * this.difficoltaCorrente, 0.5);
         const numeroPiege = Math.random() < probabilitaDoppio ? 2 : 1;
         
-        // Position pour le premier piège (et le seul si numeroPiege = 1)
         this.creaPiege(this.cameras.main.width);
         
-        // Si on doit générer un deuxième piège, on le place avec un écart
         if (numeroPiege === 2) {
-            // Distance entre les deux pièges, adaptée à la vitesse du jeu
-            // Moins d'espace à haute vitesse pour augmenter la difficulté tout en gardant le jeu jouable
             const distanzaTraPiege = 300 - (this.velocitaCorrente * 10);
             this.creaPiege(this.cameras.main.width + distanzaTraPiege);
         }
         
-        // Enregistrer la position du piège le plus à droite
         this.ultimoOstacoloX = this.cameras.main.width + (numeroPiege === 2 ? 200 - (this.velocitaCorrente * 10) : 0);
         
-        // Ajuster la distance minimale en fonction de la vitesse
         this.distanzaMinima = 600 - (this.velocitaCorrente * 50);
-        // Assurer une distance minimale raisonnable
         this.distanzaMinima = Math.max(this.distanzaMinima, 300);
     }
 
-    // Nouvelle méthode auxiliaire pour créer un piège à une position donnée
     creaPiege(positionX: number) {
         const trappola = this.physics.add.sprite(
             positionX, 
@@ -381,8 +367,7 @@ export class Game extends Phaser.Scene {
         }
 
         this.tempoDiRigenerazione += delta;
-        if (this.tempoDiRigenerazione >= 300) { // Vérifier plus souvent (300ms)
-            this.luogoOstacolo();
+        if (this.tempoDiRigenerazione >= 300) {
             this.tempoDiRigenerazione = 0;
         }
 
