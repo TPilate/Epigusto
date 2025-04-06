@@ -34,10 +34,21 @@ export class Preloader extends Scene
 
         this.load.image('logo', 'logo.png');
         this.load.image('star', 'stella.png');
+        this.load.spritesheet('phoenix', 'phoenix.png', { 
+            frameWidth: 32,
+            frameHeight: 32
+        });
     }
 
     create ()
     {
+
+        this.anims.create({
+            key: 'phoenix_fly',
+            frames: this.anims.generateFrameNumbers('phoenix', { start: 0, end: 5 }),
+            frameRate: 10,
+            repeat: -1
+        });
         //  When all the assets have loaded, it's often worth creating global objects here that the rest of the game can use.
         //  For example, you can define global animations here, so we can use them in other scenes.
 
