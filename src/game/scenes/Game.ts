@@ -29,6 +29,7 @@ export class Game extends Phaser.Scene {
     ostacolo: Phaser.Physics.Arcade.Group;
     tempoDiRigenerazione: number;
     nomeUtente: string;
+    private isItemBoxAnimationActive: boolean = false;
 
     constructor() {
         super('Game');
@@ -56,6 +57,9 @@ export class Game extends Phaser.Scene {
             frameWidth: 16,
             frameHeight: 16
         });
+        this.load.image('coniglio', 'assets/coniglio.png');
+        this.load.image('tartaruga', 'assets/tartaruga.png');
+        this.load.image('fenice', 'assets/fenice.png');    
         this.load.image('crate', 'assets/cassa.png')
     }
 
@@ -182,11 +186,18 @@ export class Game extends Phaser.Scene {
 
 
         this.time.addEvent({
-            delay: Phaser.Math.Between(3000, 8000),
+            delay: 8000, 
             callback: () => {
-            this.generaCassa();
+            // Change this value for more random spawn or less
+            if (Math.random() < 0.6) {
+                this.generaCassa();
+            }
+            
+            const minDelay = Math.max(4000, 8000 - (this.velocitaCorrente * 400));
+            const maxDelay = Math.max(7000, 12000 - (this.velocitaCorrente * 400));
+            
             this.time.addEvent({
-                delay: Phaser.Math.Between(3000, 8000),
+                delay: Phaser.Math.Between(minDelay, maxDelay),
                 callback: this.generaCassa,
                 callbackScope: this,
                 loop: false
@@ -391,68 +402,255 @@ export class Game extends Phaser.Scene {
     }
 
     private suPlayerCrateCollision(player: Phaser.GameObjects.GameObject, cassa: Phaser.GameObjects.GameObject): void {
-        const PezzoBonus = new Pezzo({
-            velocitaAttuale: this.velocitaCorrente,
-            aggiornaPunteggio: this.punteggio
-        });
-        
-        const nuovoCore = PezzoBonus.inizia();
-        
-        this.punteggio = nuovoCore;
-        this.punteggioTarget = nuovoCore;
-        this.testoPunteggio.setText('' + this.punteggio);
-        
+        // Destroy the crate first
         (cassa as Phaser.Physics.Arcade.Sprite).destroy();
-
-        const cuoreBonus = new Cuore({
-            cuore: this.vita
-        })
         
-        const nuovoVita = cuoreBonus.inizia()
+        // Define probabilities for each bonus type
+        const bonusTypes = [
+            { name: 'pezzo', chance: 0.35, label: "Score +", color: 0xFFD700, icon: 'pezzo' },
+            { name: 'cuore', chance: 0.25, label: "Vie +", color: 0xFF0000, icon: 'cuore' },
+            { name: 'coniglio', chance: 0.20, label: "Vitesse +", color: 0x00FF00, icon: 'coniglio' },
+            { name: 'tartaruga', chance: 0.15, label: "Vitesse -", color: 0x0000FF, icon: 'tartaruga' },
+            { name: 'fenice', chance: 0.05, label: "Invincible!", color: 0xFF00FF, icon: 'fenice' }
+        ];
         
-        this.vita = nuovoVita;
-
-        if (this.vita >= 10) {
-            this.vita = 9999
-            this.testoVita.setText('∞');
-            this.testoVita.setPosition(this.cameras.main.width - 80, 8);
-        } else {
-            this.testoVita.setText('' + this.vita);
+        // Normalize chances to sum to 1
+        const totalChance = bonusTypes.reduce((sum, type) => sum + type.chance, 0);
+        let normalizedBonusTypes = bonusTypes.map(type => ({
+            ...type,
+            chance: type.chance / totalChance
+        }));
+        
+        // Pick a single bonus using weighted random selection
+        const randomValue = Math.random();
+        let cumulativeProbability = 0;
+        let selectedBonus = null;
+        
+        for (const bonusType of normalizedBonusTypes) {
+            cumulativeProbability += bonusType.chance;
+            if (randomValue <= cumulativeProbability) {
+                selectedBonus = bonusType;
+                break;
+            }
         }
-
-        const coniglioInstance = new Coniglio({
-            giocoVelocita: this.velocitaCorrente
-        });
-
-        const velocitaOriginale = this.velocitaCorrente;
-        this.velocitaCorrente = coniglioInstance.inizia();
-
-        this.time.delayedCall(5000, () => {
-            this.velocitaCorrente = velocitaOriginale;
-        }, [], this);
-
-
-        const TartarugaBonus = new Tartaruga({
-            velocitaAttuale: this.velocitaCorrente,
-        })
-
-        const velocitaPrecedente = this.velocitaCorrente
-        const nuovoVelocita = TartarugaBonus.inizia()
-
-        this.velocitaCorrente = nuovoVelocita
-
-        if (this.velocitaCorrente !== velocitaPrecedente) {
-            this.time.delayedCall(10000, () => {
-                this.velocitaCorrente = velocitaPrecedente;
-            }, [], this);
-        }
-        const FeniceBonus = new Fenice({
-            scene: this,
-            player: this.Giocatore
-        });
         
-        FeniceBonus.attivaInvincibilita();
+        if (selectedBonus) {
+            // Start the item box animation
+            this.showItemBoxAnimation(selectedBonus);
+        }
+    }
+
+    private showItemBoxAnimation(selectedBonus: any): void {
+        if (this.isItemBoxAnimationActive) {
+            return;
+        }
+        
+        this.isItemBoxAnimationActive = true;
+        
+        // Create a container at center screen
+        const centerX = this.cameras.main.width / 2;
+        const centerY = this.cameras.main.height / 2;
+        
+        // Create the item box
+        const itemBoxSize = 150;
+        const itemBox = this.add.rectangle(
+            centerX,
+            centerY,
+            itemBoxSize,
+            itemBoxSize,
+            0xFFFFFF,
+            1
+        ).setOrigin(0.5);
+                
+        // Add a question mark initially
+        const questionMark = this.add.text(
+            centerX,
+            centerY, 
+            '?', 
+            {
+                fontFamily: 'minecraft',
+                fontSize: '80px',
+                color: '#000000'
+            }
+        ).setOrigin(0.5).setDepth(100);
+        
+        // Set everything to high depth
+        itemBox.setDepth(98);
+        
+        // Cycle through all bonuses rapidly before landing on the selected one
+        const allBonusTypes = [
+            { name: 'pezzo', label: "Score +", color: 0xFFD700 },
+            { name: 'cuore', label: "Vie +", color: 0xFF0000 },
+            { name: 'coniglio', label: "Vitesse +", color: 0x00FF00 },
+            { name: 'tartaruga', label: "Vitesse -", color: 0x0000FF },
+            { name: 'fenice', label: "Invincible !", color: 0xFF00FF }
+        ];
+        
+        // Create an icon for cycling
+        const iconSize = 60;
+        const bonusIcon = this.add.image(centerX, centerY, 'pezzo')
+            .setVisible(false)
+            .setOrigin(0.5)
+            .setDepth(100)
+            .setScale(iconSize / 150); 
+        
+        // Start the roulette animation
+        let currentIndex = 0;
+        const cycleSpeed = 100; // ms between item changes
+        const spinningTime = 2000; // total spinning time in ms
+        const maxCycles = Math.floor(spinningTime / cycleSpeed);
+        let currentCycle = 0;
+        
+        // Remove the question mark
+        this.time.delayedCall(500, () => {
+            questionMark.destroy();
+            bonusIcon.setVisible(true);
             
-        cassa.destroy();
+            // Start the spinning cycle
+            const cycleInterval = this.time.addEvent({
+                delay: cycleSpeed,
+                callback: () => {
+                    currentIndex = (currentIndex + 1) % allBonusTypes.length;
+                    currentCycle++;
+                    
+                    // Update the icon and box color
+                    bonusIcon.setTexture(allBonusTypes[currentIndex].name);
+                    itemBox.fillColor = allBonusTypes[currentIndex].color;
+                    
+                    // add sound here
+                    
+                    // Stop on the selected bonus
+                    if (currentCycle >= maxCycles && allBonusTypes[currentIndex].name === selectedBonus.name) {
+                        cycleInterval.destroy();
+                        
+                        // Flash the final selection
+                        this.tweens.add({
+                            targets: [itemBox],
+                            alpha: 0.2,
+                            yoyo: true,
+                            repeat: 3,
+                            duration: 200,
+                            onComplete: () => {
+                                // Play final selection sound (you can add this)
+                                // this.sound.play('bonus-selected', { volume: 0.8 });
+                                
+                                // Show the name of the bonus
+                                const bonusText = this.add.text(
+                                    centerX,
+                                    centerY + itemBoxSize/2 + 30, 
+                                    selectedBonus.label, 
+                                    {
+                                        fontFamily: 'minecraft',
+                                        fontSize: '32px',
+                                        color: '#ffffff',
+                                        stroke: '#000000',
+                                        strokeThickness: 6
+                                    }
+                                ).setOrigin(0.5).setDepth(100);
+                                
+                                // Wait a moment, then clean up and apply bonus
+                                this.time.delayedCall(1200, () => {
+                                    // Animate everything out
+                                    this.tweens.add({
+                                        targets: [itemBox, bonusIcon, bonusText],
+                                        alpha: 0,
+                                        scale: 1.5,
+                                        duration: 500,
+                                        onComplete: () => {
+                                            // Clean up
+                                            itemBox.destroy();
+                                            bonusIcon.destroy();
+                                            bonusText.destroy();
+                                            
+                                            this.applyBonus(selectedBonus);
+                                            
+                                            // Reset the flag to allow new animations
+                                            this.isItemBoxAnimationActive = false;
+                                        }
+                                    });
+                                });
+                            }
+                        });
+                    }
+                },
+                callbackScope: this,
+                loop: true
+            });
+        });
+    }
+
+    // Apply the actual bonus effect
+    private applyBonus(selectedBonus: any): void {
+        switch (selectedBonus.name) {
+            case 'pezzo':
+                const PezzoBonus = new Pezzo({
+                    velocitaAttuale: this.velocitaCorrente,
+                    aggiornaPunteggio: this.punteggio
+                });
+                
+                const nuovoCore = PezzoBonus.inizia();
+                
+                this.punteggio = nuovoCore;
+                this.punteggioTarget = nuovoCore;
+                this.testoPunteggio.setText('' + this.punteggio);
+                break;
+                
+            case 'cuore':
+                const cuoreBonus = new Cuore({
+                    cuore: this.vita
+                });
+                
+                const nuovoVita = cuoreBonus.inizia();
+                
+                this.vita = nuovoVita;
+                
+                if (this.vita >= 10) {
+                    this.vita = 9999;
+                    this.testoVita.setText('∞');
+                    this.testoVita.setPosition(this.cameras.main.width - 80, 8);
+                } else {
+                    this.testoVita.setText('' + this.vita);
+                }
+                break;
+                
+            case 'coniglio':
+                const coniglioInstance = new Coniglio({
+                    giocoVelocita: this.velocitaCorrente
+                });
+                
+                const velocitaOriginale = this.velocitaCorrente;
+                this.velocitaCorrente = coniglioInstance.inizia();
+                
+                this.time.delayedCall(5000, () => {
+                    this.velocitaCorrente = velocitaOriginale;
+                }, [], this);
+                break;
+                
+            case 'tartaruga':
+                const TartarugaBonus = new Tartaruga({
+                    velocitaAttuale: this.velocitaCorrente,
+                });
+                
+                const velocitaPrecedente = this.velocitaCorrente;
+                const nuovoVelocita = TartarugaBonus.inizia();
+                
+                this.velocitaCorrente = nuovoVelocita;
+                
+                if (this.velocitaCorrente !== velocitaPrecedente) {
+                    this.time.delayedCall(10000, () => {
+                        this.velocitaCorrente = velocitaPrecedente;
+                    }, [], this);
+                }
+                break;
+                
+            case 'fenice':
+                const FeniceBonus = new Fenice({
+                    scene: this,
+                    player: this.Giocatore
+                });
+                
+                FeniceBonus.attivaInvincibilita();
+                break;
+        }
     }
 }
