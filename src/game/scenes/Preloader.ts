@@ -34,7 +34,7 @@ export class Preloader extends Scene
 
         this.load.image('logo', 'logo.png');
         this.load.image('star', 'stella.png');
-        this.load.spritesheet('phoenix', 'phoenix.png', { 
+        this.load.spritesheet('fenice', 'fenice.png', { 
             frameWidth: 32,
             frameHeight: 32
         });

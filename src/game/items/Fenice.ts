@@ -29,7 +29,7 @@ export class Fenice {
             this.spriteFenice = this.scene.add.sprite(
                 this.player.x,
                 this.player.y,
-                'phoenix'
+                'fenice'
             );
             
             this.spriteFenice.play('phoenix_fly');
