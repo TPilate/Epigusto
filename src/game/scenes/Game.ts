@@ -15,7 +15,7 @@ export class Game extends Phaser.Scene {
     velocitaCorrente: number;
     cursori: Phaser.Types.Input.Keyboard.CursorKeys | undefined;
     Giocatore: Phaser.Physics.Arcade.Sprite;
-    kya: any;
+    tasti: any;
     punteggio: number;
     testoPunteggio: Phaser.GameObjects.Text;
     vita: number;
@@ -29,6 +29,7 @@ export class Game extends Phaser.Scene {
     ostacolo: Phaser.Physics.Arcade.Group;
     tempoDiRigenerazione: number;
     nomeUtente: string;
+    private animazioneCassaAttiva: boolean = false;
 
     constructor() {
         super('Game');
@@ -56,7 +57,12 @@ export class Game extends Phaser.Scene {
             frameWidth: 16,
             frameHeight: 16
         });
+
+        this.load.image('coniglio', 'assets/coniglio.png');
+        this.load.image('tartaruga', 'assets/tartaruga.png');
+
         this.load.image('crate', 'assets/cassa.png')
+        this.load.audio('crate-sound', 'sounds/apertura_del_caso.m4a');
     }
 
     create() {
@@ -70,7 +76,7 @@ export class Game extends Phaser.Scene {
 
         this.anims.create({
             key: "caratrappolaChiusa",
-            frames: this.anims.generateFrameNumbers('trappola', {frames:[0, 1, 2, 3]}),
+            frames: this.anims.generateFrameNumbers('trappola', { frames: [0, 1, 2, 3] }),
             frameRate: 8,
             repeat: 0
         });
@@ -93,7 +99,7 @@ export class Game extends Phaser.Scene {
         this.suolo.setScale(3);
 
         this.Giocatore = this.physics.add.sprite(80, 200, 'carattere');
-        this.physics.add.existing(this.suolo, true); 
+        this.physics.add.existing(this.suolo, true);
 
         this.Giocatore = this.physics.add.sprite(80, 200, 'carattere');
 
@@ -119,7 +125,7 @@ export class Game extends Phaser.Scene {
             frameRate: 10,
         });
 
-        // Score UI
+        // UI Punteggio
         this.add.image(15, 5, 'pezzo').setOrigin(0, 0).setScale(0.15);
         this.testoPunteggio = this.add.text(
             90,
@@ -145,17 +151,17 @@ export class Game extends Phaser.Scene {
         this.testoVita.setText('3');
         this.cursori = this.input.keyboard?.createCursorKeys() || {} as Phaser.Types.Input.Keyboard.CursorKeys;
 
-        this.kya = this.input.keyboard?.addKeys({
+        this.tasti = this.input.keyboard?.addKeys({
             z: Phaser.Input.Keyboard.KeyCodes.Z,
             spaceBar: Phaser.Input.Keyboard.KeyCodes.SPACE,
             s: Phaser.Input.Keyboard.KeyCodes.S,
-            down: Phaser.Input.Keyboard.KeyCodes.DOWN,            
+            down: Phaser.Input.Keyboard.KeyCodes.DOWN,
             w: Phaser.Input.Keyboard.KeyCodes.W
         });
 
         this.Giocatore.play('run');
 
-        // Score timer
+        // Timer punteggio
         this.time.addEvent({
             delay: 1000,
             callback: () => {
@@ -174,7 +180,7 @@ export class Game extends Phaser.Scene {
 
         this.time.addEvent({
             delay: this.intervalloIncremento,
-            callback: this.aumentareVelocita,
+            callback: this.aumentaVelocita,
             callbackScope: this,
             loop: true
         });
@@ -182,35 +188,42 @@ export class Game extends Phaser.Scene {
 
 
         this.time.addEvent({
-            delay: Phaser.Math.Between(3000, 8000),
+            delay: 8000,
             callback: () => {
-            this.generaCassa();
-            this.time.addEvent({
-                delay: Phaser.Math.Between(3000, 8000),
-                callback: this.generaCassa,
-                callbackScope: this,
-                loop: false
-            });
+                // Cambia questo valore per spawn più o meno casuali
+                if (Math.random() < 0.3) {
+                    this.generaCassa();
+                }
+
+                const minRitardo = Math.max(4000, 8000 - (this.velocitaCorrente * 400));
+                const maxRitardo = Math.max(7000, 12000 - (this.velocitaCorrente * 400));
+
+                this.time.addEvent({
+                    delay: Phaser.Math.Between(minRitardo, maxRitardo),
+                    callback: this.generaCassa,
+                    callbackScope: this,
+                    loop: false
+                });
             },
             callbackScope: this,
             loop: true
         });
 
         this.physics.add.overlap(
-            this.Giocatore, 
-            this.casse, 
-            this.suPlayerCrateCollision, 
-            null, 
+            this.Giocatore,
+            this.casse,
+            this.collisioneGiocatoreCassa,
+            undefined,
             this
         );
 
-        this.initCollisione()
+        this.inizializzaCollisione()
         this.uovoDiPasqua()
         EventBus.emit('current-scene-ready', this);
     }
 
-    uovoDiPasqua () {
-        if (this.nomeUtente.toLocaleLowerCase() == "phoenix" ) {
+    uovoDiPasqua() {
+        if (this.nomeUtente.toLocaleLowerCase() == "phoenix") {
             this.camera.setBackgroundColor(0xff0000);
 
             this.sfondono = this.add.image(512, 384, 'sfondono');
@@ -218,16 +231,16 @@ export class Game extends Phaser.Scene {
         }
     }
 
-    luogoOstacolo() {
-        const ostacoloNum = Math.floor(Math.random() * 7 ) + 1;
+    posizionaOstacolo() {
+        const numeroOstacolo = Math.floor(Math.random() * 7) + 1;
 
-        if (ostacoloNum > 6 && ostacoloNum < 8) {
+        if (numeroOstacolo > 6 && numeroOstacolo < 8) {
             const trappola = this.physics.add.sprite(
-                this.cameras.main.width, 
+                this.cameras.main.width,
                 this.cameras.main.height - 60,
                 'trappola'
             );
-            
+
             trappola.setFrame(0);
             this.ostacolo.add(trappola);
             trappola.setScale(4);
@@ -241,74 +254,74 @@ export class Game extends Phaser.Scene {
         }
     }
 
-    trappolaCollisione(ostacolo: Phaser.Physics.Arcade.Sprite) {
+    collisioneTrappola(ostacolo: Phaser.Physics.Arcade.Sprite) {
         if (ostacolo.getData('hasCollided')) {
             return;
         }
-        
+
         ostacolo.setData('hasCollided', true);
-        
+
         ostacolo.play("caratrappolaChiusa", true);
-        
+
         ostacolo.once('animationcomplete', () => {
             ostacolo.destroy();
         });
-        
+
         if (this.Giocatore.getData('invincible')) {
             return;
         }
-        
+
         this.vita -= 1;
         this.testoVita.setText('' + this.vita);
-        
+
         if (this.vita <= 0) {
             this.time.delayedCall(500, () => {
                 this.cambiaScena();
             });
         }
     }
-    initCollisione() {
+    inizializzaCollisione() {
         this.physics.add.overlap(
-            this.ostacolo, 
-            this.Giocatore, 
-            (player, ostacolo) => {
-                this.trappolaCollisione(ostacolo as Phaser.Physics.Arcade.Sprite);
+            this.ostacolo,
+            this.Giocatore,
+            (giocatore, ostacolo) => {
+                this.collisioneTrappola(ostacolo as Phaser.Physics.Arcade.Sprite);
             }
         );
     }
     update(delta: number) {
 
-        if(this.vita <= 0){
+        if (this.vita <= 0) {
             this.velocitaCorrente = 0;
             this.ostacolo.getChildren().forEach((child) => {
-            (child as Phaser.Physics.Arcade.Sprite).setVelocity(0);
+                (child as Phaser.Physics.Arcade.Sprite).setVelocity(0);
             });
             this.casse.getChildren().forEach((child) => {
-            (child as Phaser.Physics.Arcade.Sprite).setVelocity(0);
+                (child as Phaser.Physics.Arcade.Sprite).setVelocity(0);
             });
             this.physics.pause();
 
             this.time.delayedCall(1000, () => {
-            this.scene.start('GameOver');
+                this.scene.start('GameOver');
             });
         }
 
         Phaser.Actions.IncX(this.ostacolo.getChildren(), -this.velocitaCorrente * 3)
 
-        this.tempoDiRigenerazione += delta * this.velocitaCorrente * 0.05 / 10; 
+        this.tempoDiRigenerazione += delta * this.velocitaCorrente * 0.05 / 10;
         if (this.tempoDiRigenerazione >= 2000) {
-          if (Math.random() < 0.6) { 
-            this.luogoOstacolo();
-          }
-          this.tempoDiRigenerazione = 0;
+            if (Math.random() < 0.6) {
+                this.posizionaOstacolo();
+            }
+            this.tempoDiRigenerazione = 0;
         }
 
         this.sfondo.tilePositionX += this.velocitaCorrente;
         this.suolo.tilePositionX += this.velocitaCorrente;
 
 
-        const ilGiocatoreSulTerreno = this.Giocatore.body ? (this.Giocatore.body.touching.down || this.Giocatore.body.blocked.down) : false;
-        if ((this.kya?.spaceBar?.isDown || this.cursori?.space?.isDown || this.kya?.z?.isDown || this.kya?.w?.isDown || this.cursori?.up.isDown) && ilGiocatoreSulTerreno) {
+        const giocatoreSulTerreno = this.Giocatore.body ? (this.Giocatore.body.touching.down || this.Giocatore.body.blocked.down) : false;
+        if ((this.tasti?.spaceBar?.isDown || this.cursori?.space?.isDown || this.tasti?.z?.isDown || this.tasti?.w?.isDown || this.cursori?.up.isDown) && giocatoreSulTerreno) {
             this.Giocatore.setVelocityY(-600);
             this.Giocatore.play('jump', true);
             this.time.delayedCall(500, () => {
@@ -317,20 +330,20 @@ export class Game extends Phaser.Scene {
             this.Giocatore.setBounce(0);
         }
 
-        if ((this.kya?.s?.isDown || this.kya?.down?.isDown) && !ilGiocatoreSulTerreno) {
-            this.Giocatore.setVelocityY(600); 
-            this.Giocatore.setBounce(0); 
+        if ((this.tasti?.s?.isDown || this.tasti?.down?.isDown) && !giocatoreSulTerreno) {
+            this.Giocatore.setVelocityY(600);
+            this.Giocatore.setBounce(0);
         }
-       
 
 
-        if (ilGiocatoreSulTerreno && this.Giocatore.body && this.Giocatore.body.velocity.y === 0) {
+
+        if (giocatoreSulTerreno && this.Giocatore.body && this.Giocatore.body.velocity.y === 0) {
             if (this.Giocatore.anims.currentAnim?.key !== 'run') {
                 this.Giocatore.play('run', true);
             }
         }
 
-        this.aggiornareCasse();
+        this.aggiornaCasse();
 
     }
 
@@ -353,26 +366,26 @@ export class Game extends Phaser.Scene {
 
     cambiaScena() {
         this.Giocatore.play('death', true);
-        
+
         this.time.delayedCall(5000, () => {
             this.scene.start('GameOver');
         });
-        
 
-        
-        const playerInfo = JSON.stringify({
+
+
+        const infoGiocatore = JSON.stringify({
             name: this.nomeUtente,
             score: this.punteggio
         });
 
-        let nextIndex = 1;
-        while (localStorage.getItem(`playerInfo${nextIndex}`)) {
-            nextIndex++;
+        let prossimoIndice = 1;
+        while (localStorage.getItem(`playerInfo${prossimoIndice}`)) {
+            prossimoIndice++;
         }
 
-        localStorage.setItem(`playerInfo${nextIndex}`, playerInfo);
+        localStorage.setItem(`playerInfo${prossimoIndice}`, infoGiocatore);
 
-        
+
         this.velocitaCorrente = 0.5;
         this.punteggio = 0;
         this.punteggioTarget = 0;
@@ -381,7 +394,7 @@ export class Game extends Phaser.Scene {
         this.tempoDiRigenerazione = 0;
     }
 
-    private aumentareVelocita(): void {
+    private aumentaVelocita(): void {
         const valoreIncremento = 0.2;
         this.velocitaCorrente += valoreIncremento;
 
@@ -400,7 +413,7 @@ export class Game extends Phaser.Scene {
         cassa.body.allowGravity = false;
     }
 
-    private aggiornareCasse(): void {
+    private aggiornaCasse(): void {
         this.casse.getChildren().forEach((child) => {
             const cassa = child as Phaser.Physics.Arcade.Sprite;
 
@@ -412,69 +425,234 @@ export class Game extends Phaser.Scene {
         });
     }
 
-    private suPlayerCrateCollision(player: Phaser.GameObjects.GameObject, cassa: Phaser.GameObjects.GameObject): void {
-        const PezzoBonus = new Pezzo({
-            velocitaAttuale: this.velocitaCorrente,
-            aggiornaPunteggio: this.punteggio
-        });
-        
-        const nuovoCore = PezzoBonus.inizia();
-        
-        this.punteggio = nuovoCore;
-        this.punteggioTarget = nuovoCore;
-        this.testoPunteggio.setText('' + this.punteggio);
-        
+    private collisioneGiocatoreCassa(giocatore: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile | Phaser.Physics.Arcade.Body | Phaser.Physics.Arcade.StaticBody, cassa: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile | Phaser.Physics.Arcade.Body | Phaser.Physics.Arcade.StaticBody): void {
         (cassa as Phaser.Physics.Arcade.Sprite).destroy();
 
-        const cuoreBonus = new Cuore({
-            cuore: this.vita
-        })
-        
-        const nuovoVita = cuoreBonus.inizia()
-        
-        this.vita = nuovoVita;
+        const tipiBonusArr = [
+            { name: 'pezzo', chance: 0.35, label: "Punti +", color: 0xFFD700, icon: 'pezzo' },
+            { name: 'cuore', chance: 0.25, label: "Vite +", color: 0xFF0000, icon: 'cuore' },
+            { name: 'coniglio', chance: 0.20, label: "Velocità +", color: 0x00FF00, icon: 'coniglio' },
+            { name: 'tartaruga', chance: 0.15, label: "Velocità -", color: 0x0000FF, icon: 'tartaruga' },
+            { name: 'fenice', chance: 0.05, label: "Invincibile!", color: 0xFF00FF, icon: 'fenice' }
+        ];
 
-        if (this.vita >= 10) {
-            this.vita = 9999
-            this.testoVita.setText('∞');
-            this.testoVita.setPosition(this.cameras.main.width - 80, 8);
-        } else {
-            this.testoVita.setText('' + this.vita);
+        const probabilitaTotale = tipiBonusArr.reduce((sum, type) => sum + type.chance, 0);
+        let tipiBonusNormalizzati = tipiBonusArr.map(type => ({
+            ...type,
+            chance: type.chance / probabilitaTotale
+        }));
+
+        const valoreCasuale = Math.random();
+        let probabilitaCumulativa = 0;
+        let bonusSelezionato = null;
+
+        for (const tipoBonus of tipiBonusNormalizzati) {
+            probabilitaCumulativa += tipoBonus.chance;
+            if (valoreCasuale <= probabilitaCumulativa) {
+                bonusSelezionato = tipoBonus;
+                break;
+            }
         }
 
-        const coniglioInstance = new Coniglio({
-            giocoVelocita: this.velocitaCorrente
-        });
-
-        const velocitaOriginale = this.velocitaCorrente;
-        this.velocitaCorrente = coniglioInstance.inizia();
-
-        this.time.delayedCall(5000, () => {
-            this.velocitaCorrente = velocitaOriginale;
-        }, [], this);
-
-
-        const TartarugaBonus = new Tartaruga({
-            velocitaAttuale: this.velocitaCorrente,
-        })
-
-        const velocitaPrecedente = this.velocitaCorrente
-        const nuovoVelocita = TartarugaBonus.inizia()
-
-        this.velocitaCorrente = nuovoVelocita
-
-        if (this.velocitaCorrente !== velocitaPrecedente) {
-            this.time.delayedCall(10000, () => {
-                this.velocitaCorrente = velocitaPrecedente;
-            }, [], this);
+        if (bonusSelezionato) {
+            this.mostraAnimazioneCassa(bonusSelezionato);
         }
-        const FeniceBonus = new Fenice({
-            scene: this,
-            player: this.Giocatore
+    }
+
+    private mostraAnimazioneCassa(bonusSelezionato: any): void {
+        if (this.animazioneCassaAttiva) {
+            return;
+        }
+
+        this.animazioneCassaAttiva = true;
+
+        const centroX = this.cameras.main.width / 2;
+        const centroY = this.cameras.main.height / 3;
+
+        const dimensioneCassa = 150;
+        const boxOggetto = this.add.rectangle(
+            centroX,
+            centroY,
+            dimensioneCassa,
+            dimensioneCassa,
+            0xFFFFFF,
+            0
+        ).setOrigin(0.5);
+
+        const puntoInterrogativo = this.add.text(
+            centroX,
+            centroY,
+            '?',
+            {
+                fontFamily: 'minecraft',
+                fontSize: '80px',
+                color: '#000000'
+            }
+        ).setOrigin(0.5).setDepth(100);
+
+        boxOggetto.setDepth(98);
+
+        const tuttiTipiBonus = [
+            { name: 'pezzo', label: "Punti +", color: 0xFFD700 },
+            { name: 'cuore', label: "Vite +", color: 0xFF0000 },
+            { name: 'coniglio', label: "Velocità +", color: 0x00FF00 },
+            { name: 'tartaruga', label: "Velocità -", color: 0x0000FF },
+            { name: 'fenice', label: "Invincibile!", color: 0xFF00FF }
+        ];
+
+        const dimensioneIcona = 60;
+        const iconaBonus = this.add.image(centroX, centroY, 'pezzo')
+            .setVisible(false)
+            .setOrigin(0.5)
+            .setDepth(100)
+            .setScale(dimensioneIcona / 150);
+
+        let indiceCorrente = 0;
+        const velocitaCiclo = 100;
+        const tempoRotazione = 2000; 
+        const massimiCicli = Math.floor(tempoRotazione / velocitaCiclo);
+        let cicloCorrente = 0;
+
+        this.sound.play('crate-sound', { volume: 0.7 });
+        this.time.delayedCall(500, () => {
+            puntoInterrogativo.destroy();
+            iconaBonus.setVisible(true);
+
+            const intervalloGiratorio = this.time.addEvent({
+                delay: velocitaCiclo,
+                callback: () => {
+                    indiceCorrente = (indiceCorrente + 1) % tuttiTipiBonus.length;
+                    cicloCorrente++;
+
+                    iconaBonus.setTexture(tuttiTipiBonus[indiceCorrente].name);
+
+                    if (tuttiTipiBonus[indiceCorrente].name === 'fenice') {
+                        iconaBonus.setScale((dimensioneIcona / 150) * 10);
+                    } else {
+                        iconaBonus.setScale(dimensioneIcona / 150);
+                    }
+
+                    if (cicloCorrente >= massimiCicli && tuttiTipiBonus[indiceCorrente].name === bonusSelezionato.name) {
+                        intervalloGiratorio.destroy();
+
+                        this.tweens.add({
+                            targets: [boxOggetto],
+                            alpha: 0.2,
+                            yoyo: true,
+                            repeat: 3,
+                            duration: 200,
+                            onComplete: () => {
+                                const testoBonus = this.add.text(
+                                    centroX,
+                                    centroY + dimensioneCassa / 2 + 30,
+                                    bonusSelezionato.label,
+                                    {
+                                        fontFamily: 'minecraft',
+                                        fontSize: '32px',
+                                        color: '#ffffff',
+                                        stroke: '#000000',
+                                        strokeThickness: 6
+                                    }
+                                ).setOrigin(0.5).setDepth(100);
+
+                                this.time.delayedCall(1200, () => {
+                                    this.tweens.add({
+                                        targets: [boxOggetto, iconaBonus, testoBonus],
+                                        alpha: 0,
+                                        scale: 1.5,
+                                        duration: 500,
+                                        onComplete: () => {
+                                            boxOggetto.destroy();
+                                            iconaBonus.destroy();
+                                            testoBonus.destroy();
+
+                                            this.applicaBonus(bonusSelezionato);
+
+                                            this.animazioneCassaAttiva = false;
+                                        }
+                                    });
+                                });
+                            }
+                        });
+                    }
+                },
+                callbackScope: this,
+                loop: true
+            });
         });
-        
-        FeniceBonus.attivaInvincibilita();
-            
-        cassa.destroy();
+    }
+
+    private applicaBonus(bonusSelezionato: any): void {
+        switch (bonusSelezionato.name) {
+            case 'pezzo':
+                const BonusPezzo = new Pezzo({
+                    velocitaAttuale: this.velocitaCorrente,
+                    aggiornaPunteggio: this.punteggio
+                });
+
+                const nuovoPunteggio = BonusPezzo.inizia();
+
+                this.punteggio = nuovoPunteggio;
+                this.punteggioTarget = nuovoPunteggio;
+                this.testoPunteggio.setText('' + this.punteggio);
+                break;
+
+            case 'cuore':
+                const bonusCuore = new Cuore({
+                    cuore: this.vita
+                });
+
+                const nuovaVita = bonusCuore.inizia();
+
+                this.vita = nuovaVita;
+
+                if (this.vita >= 10) {
+                    this.vita = 9999;
+                    this.testoVita.setText('∞');
+                    this.testoVita.setPosition(this.cameras.main.width - 80, 8);
+                } else {
+                    this.testoVita.setText('' + this.vita);
+                }
+                break;
+
+            case 'coniglio':
+                const istanzaConiglio = new Coniglio({
+                    giocoVelocita: this.velocitaCorrente
+                });
+
+                const velocitaOriginale = this.velocitaCorrente;
+                this.velocitaCorrente = istanzaConiglio.inizia();
+
+                this.time.delayedCall(5000, () => {
+                    this.velocitaCorrente = velocitaOriginale;
+                }, [], this);
+                break;
+
+            case 'tartaruga':
+                const BonusTartaruga = new Tartaruga({
+                    velocitaAttuale: this.velocitaCorrente,
+                });
+
+                const velocitaPrecedente = this.velocitaCorrente;
+                const nuovaVelocita = BonusTartaruga.inizia();
+
+                this.velocitaCorrente = nuovaVelocita;
+
+                if (this.velocitaCorrente !== velocitaPrecedente) {
+                    this.time.delayedCall(10000, () => {
+                        this.velocitaCorrente = velocitaPrecedente;
+                    }, [], this);
+                }
+                break;
+
+            case 'fenice':
+                const BonusFenice = new Fenice({
+                    scene: this,
+                    player: this.Giocatore
+                });
+
+                BonusFenice.attivaInvincibilita();
+                break;
+        }
     }
 }
