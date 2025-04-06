@@ -51,6 +51,7 @@ export class GameOver extends Scene {
 
         EventBus.emit('current-scene-ready', this);
     }
+    
 
     cambiaSfondo() {
         this.scene.start('MainMenu');
