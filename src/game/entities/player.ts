@@ -1,9 +1,9 @@
 import Phaser from 'phaser';
 
-export class player extends Phaser.Physics.Arcade.Sprite {
-    private jumpForce: number;
-    private health: number;
-    private isJumping: boolean;
+export class Giocatore extends Phaser.Physics.Arcade.Sprite {
+    private forzaSalto: number;
+    private salute: number;
+    private staSaltando: boolean;
     private cursors: Phaser.Types.Input.Keyboard.CursorKeys;
 
     constructor(scene: Phaser.Scene, x: number, y: number) {
@@ -13,21 +13,21 @@ export class player extends Phaser.Physics.Arcade.Sprite {
         scene.add.existing(this);
         // scene.physics.add.existing(this);
 
-        const arcadeBody = this.body as Phaser.Physics.Arcade.Body;
-        // arcadeBody.collideWorldBounds = true;  
+        const corpoArcade = this.body as Phaser.Physics.Arcade.Body;
+        // corpoArcade.collideWorldBounds = true;  
 
-        this.jumpForce = -400;
-        this.health = 1;
-        this.isJumping = false;
+        this.forzaSalto = -400;
+        this.salute = 1;
+        this.staSaltando = false;
 
-        this.createAnimations();
+        this.creaAnimazioni();
 
         if (scene.input.keyboard) {
             this.cursors = scene.input.keyboard.createCursorKeys();
         }
     }
 
-    private createAnimations(): void {
+    private creaAnimazioni(): void {
 
         this.anims.create({
             key: 'walk',
@@ -53,34 +53,34 @@ export class player extends Phaser.Physics.Arcade.Sprite {
 
         if (!this.body) return;
 
-        const body = this.body as Phaser.Physics.Arcade.Body;
+        const corpo = this.body as Phaser.Physics.Arcade.Body;
 
-        if (this.cursors.up.isDown && body.onFloor()) {
-            this.setVelocityY(this.jumpForce);
+        if (this.cursors.up.isDown && corpo.onFloor()) {
+            this.setVelocityY(this.forzaSalto);
             this.play('jump', true);
-            this.isJumping = true;
+            this.staSaltando = true;
         }
 
-        if (body.onFloor()) {
-            this.isJumping = false;
-        }
-    }
-
-    takeDamage(amount: number): void {
-        this.health -= amount;
-        if (this.health <= 0) {
-            this.die();
+        if (corpo.onFloor()) {
+            this.staSaltando = false;
         }
     }
 
-    die(): void {
+    prendiDanno(quantita: number): void {
+        this.salute -= quantita;
+        if (this.salute <= 0) {
+            this.muori();
+        }
+    }
+
+    muori(): void {
         if (this.body) {
             this.disableBody(true, true);
             this.scene.events.emit('playerDied');
         }
     }
 
-    get arcadeBody(): Phaser.Physics.Arcade.Body {
+    get corpoArcade(): Phaser.Physics.Arcade.Body {
         return this.body as Phaser.Physics.Arcade.Body;
     }
 }
