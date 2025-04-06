@@ -21,6 +21,7 @@ export class Game extends Phaser.Scene {
     vita: number;
     testoVita: Phaser.GameObjects.Text;
     casse: Phaser.Physics.Arcade.Group;
+    monete: Phaser.Physics.Arcade.Group;
     private velocitaMassima: number;
     private intervalloIncremento: number;
     private punteggioTarget: number;
@@ -61,6 +62,8 @@ export class Game extends Phaser.Scene {
         this.load.image('pezzo', 'assets/pezzo.png');
         this.load.image('cuore', 'assets/cuore.png');
         this.load.atlas('carattere', './assets/PersonaggioFoglioSprite.png', './assets/PersonaggioFoglio.json');
+        this.load.atlas('coin', './assets/coin.png', './assets/coin.json');
+
         this.load.spritesheet('trappola', 'assets/trappola_per_orsi.png', {
             frameWidth: 16,
             frameHeight: 16
@@ -77,14 +80,13 @@ export class Game extends Phaser.Scene {
         this.load.audio('danno', 'assets/audio/danno.m4a');
         this.load.audio('temaMorte', 'assets/audio/temaMorte.m4a');
         this.load.audio('sonoPieca', 'assets/audio/pieca.m4a');
-
-
     }
-
     create() {
         this.casse = this.physics.add.group();
         this.nomeUtente = localStorage.getItem("playerName") || "";
         this.camera = this.cameras.main;
+        this.ostacolo = this.physics.add.group();
+        this.monete = this.physics.add.group();
         this.ostacolo = this.physics.add.group();
         this.sfondo = this.add.tileSprite(0, 0, this.cameras.main.width, this.cameras.main.height, 'sfondo');
         this.sfondo.setOrigin(0, 0);
@@ -114,6 +116,12 @@ export class Game extends Phaser.Scene {
         this.anims.create({
             key: 'death',
             frames: this.anims.generateFrameNames('carattere', { prefix: 'death', end: 4, zeroPad: 2 }),
+            frameRate: 8,
+        });
+
+        this.anims.create({
+            key: 'rotate',
+            frames: this.anims.generateFrameNames('coin', { prefix: 'coin', end: 8, zeroPad: 2 }),
             frameRate: 8,
         });
 
@@ -191,7 +199,6 @@ export class Game extends Phaser.Scene {
 
         this.Giocatore.play('run');
 
-        // Timer punteggio
         this.time.addEvent({
             delay: 1000,
             callback: () => {
@@ -220,7 +227,7 @@ export class Game extends Phaser.Scene {
         this.time.addEvent({
             delay: 8000,
             callback: () => {
-                // Cambia questo valore per spawn più o meno casuali
+
                 if (Math.random() < 0.3) {
                     this.generaCassa();
                 }
@@ -319,6 +326,27 @@ export class Game extends Phaser.Scene {
         trappola.setImmovable(true);
         trappola.body.setAllowGravity(false);
         trappola.setData('hasCollided', false);
+
+        if (Math.random() < 0.4) {
+            this.creaCoin(positionX);
+        }
+    }
+
+    creaCoin(positionX: number) {
+        const coin = this.physics.add.sprite(
+            positionX,
+            this.cameras.main.height - 57 - Phaser.Math.Between(50, 200), 
+            'coin'
+        );
+        
+        coin.play('rotate', true);
+        this.monete.add(coin);
+        coin.setScale(0.2);
+        coin.setSize(50, 50);
+        
+        coin.setImmovable(true);
+        coin.body.setAllowGravity(false);
+        coin.setData('collected', false);
     }
 
     collisioneTrappola(ostacolo: Phaser.Physics.Arcade.Sprite) {
@@ -348,12 +376,52 @@ export class Game extends Phaser.Scene {
             });
         }
     }
+
+    collisioneCoin(giocatore: Phaser.Physics.Arcade.Sprite, coin: Phaser.Physics.Arcade.Sprite) {
+        if (coin.getData('collected')) {
+            return;
+        }
+
+        coin.setData('collected', true);
+        
+        // Play sound effect
+        this.sonoPieca.play();
+        
+        // Add points
+        this.punteggio += 50;
+        this.punteggioTarget = this.punteggio;
+        this.testoPunteggio.setText('' + this.punteggio);
+        
+        // Animate coin collection
+        this.tweens.add({
+            targets: coin,
+            y: coin.y - 50,
+            alpha: 0,
+            scale: 0.5,
+            duration: 300,
+            onComplete: () => {
+                coin.destroy();
+            }
+        });
+    }
+
+
     inizializzaCollisione() {
+        // Fix trap collision detection
         this.physics.add.overlap(
-            this.ostacolo,
             this.Giocatore,
+            this.ostacolo,
             (giocatore, ostacolo) => {
                 this.collisioneTrappola(ostacolo as Phaser.Physics.Arcade.Sprite);
+            }
+        );
+
+        // Fix coin collision detection - this was incorrect before
+        this.physics.add.overlap(
+            this.Giocatore,
+            this.monete,
+            (giocatore, moneta) => {
+                this.collisioneCoin(giocatore as Phaser.Physics.Arcade.Sprite, moneta as Phaser.Physics.Arcade.Sprite);
             }
         );
     }
@@ -375,6 +443,9 @@ export class Game extends Phaser.Scene {
         }
 
         Phaser.Actions.IncX(this.ostacolo.getChildren(), -this.velocitaCorrente * 3);
+        
+        // Ajout: Déplace également les pièces à la même vitesse que les obstacles
+        Phaser.Actions.IncX(this.monete.getChildren(), -this.velocitaCorrente * 3);
 
         if (this.ostacolo.getLength() > 0) {
             let ostacoloPiuLontano = 0;
@@ -427,7 +498,20 @@ export class Game extends Phaser.Scene {
             }
         }
 
+
+        
+
         this.aggiornaCasse();
+
+        this.aggiornaMonete(); 
+
+        // Nettoyage des pièces qui sortent de l'écran (à ajouter après aggiornaCasse())
+        this.monete.getChildren().forEach((child) => {
+            const moneta = child as Phaser.Physics.Arcade.Sprite;
+            if (moneta.x < -moneta.displayWidth) {
+                moneta.destroy();
+            }
+        });
 
     }
 
@@ -507,6 +591,17 @@ export class Game extends Phaser.Scene {
 
             if (cassa.x < -cassa.displayWidth) {
                 cassa.destroy();
+            }
+        });
+    }
+
+    private aggiornaMonete(): void {
+        this.monete.getChildren().forEach((child) => {
+            const moneta = child as Phaser.Physics.Arcade.Sprite;
+            moneta.x -= this.velocitaCorrente;
+
+            if (moneta.x < -moneta.displayWidth) {
+                moneta.destroy();
             }
         });
     }
