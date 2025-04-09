@@ -11,9 +11,9 @@ export default function Home() {
     return (
         <>
             <Head>
-                <meta name="description" content="Un template di progetto Phaser 3 con Next.js che dimostra la comunicazione tra Next.js e React e utilizza Vite per il bundling." />
+                <meta name="description" content="Epigusto est un jeu de plateforme en 2D développé en seulement 2 jours lors d'un hackathon Epitech" />
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
-                <link rel="icon" href="/icona.png" />
+                <link rel="icon" href="/icon.png" />
             </Head>
             <main className={`${styles.main} ${inter.className}`}>
                 <AppWithoutSSR />
