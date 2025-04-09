@@ -8,174 +8,171 @@ import { Fenice } from '../items/Fenice';
 
 export class Game extends Phaser.Scene {
     camera: Phaser.Cameras.Scene2D.Camera;
-    sfondo: Phaser.GameObjects.TileSprite;
-    sfondono: Phaser.GameObjects.Image;
-    testoGioco: Phaser.GameObjects.Text;
-    suolo: Phaser.GameObjects.TileSprite;
-    velocitaCorrente: number;
-    cursori: Phaser.Types.Input.Keyboard.CursorKeys | undefined;
-    Giocatore: Phaser.Physics.Arcade.Sprite;
-    tasti: any;
-    punteggio: number;
-    testoPunteggio: Phaser.GameObjects.Text;
-    vita: number;
-    testoVita: Phaser.GameObjects.Text;
-    casse: Phaser.Physics.Arcade.Group;
-    monete: Phaser.Physics.Arcade.Group;
-    private velocitaMassima: number;
-    private intervalloIncremento: number;
-    private punteggioTarget: number;
-    private incrementoPunteggio: number;
-    timerIncrementoPunteggio: Phaser.Time.TimerEvent;
-    ostacolo: Phaser.Physics.Arcade.Group;
-    tempoDiRigenerazione: number;
-    nomeUtente: string;
-    private animazioneCassaAttiva: boolean = false;
-    private ultimoOstacoloX: number = 0;
-    private distanzaMinima: number = 0;
-    private difficoltaCorrente: number = 1;
-    forestaSono: any;
-    temaPrincipale: any;
-    saltareAudio: any;
-    danno: any;
-    temaMorte: any;
-    sonoPieca:any;
-    suoloCollisione: Phaser.Physics.Arcade.StaticBody;
+    background: Phaser.GameObjects.TileSprite;
+    backgroundTexture: Phaser.GameObjects.Image;
+    gameText: Phaser.GameObjects.Text;
+    ground: Phaser.GameObjects.TileSprite;
+    currentSpeed: number;
+    cursors: Phaser.Types.Input.Keyboard.CursorKeys | undefined;
+    Player: Phaser.Physics.Arcade.Sprite;
+    keys: any;
+    score: number;
+    scoreText: Phaser.GameObjects.Text;
+    health: number;
+    healthText: Phaser.GameObjects.Text;
+    crates: Phaser.Physics.Arcade.Group;
+    coins: Phaser.Physics.Arcade.Group;
+    private maxSpeed: number;
+    private incrementInterval: number;
+    private targetScore: number;
+    private scoreIncrement: number;
+    scoreIncrementTimer: Phaser.Time.TimerEvent;
+    obstacle: Phaser.Physics.Arcade.Group;
+    regenerationTime: number;
+    userName: string;
+    private crateAnimationActive: boolean = false;
+    private lastObstacleX: number = 0;
+    private minDistance: number = 0;
+    private currentDifficulty: number = 1;
+    forestSound: any;
+    mainTheme: any;
+    jumpAudio: any;
+    damage: any;
+    deathTheme: any;
+    coinSound: any;
+    groundCollision: Phaser.Physics.Arcade.StaticBody;
 
     constructor() {
         super('Game');
-        this.velocitaCorrente = 1;
-        this.punteggio = 0;
-        this.punteggioTarget = 0;
-        this.incrementoPunteggio = 2;
-        this.velocitaMassima = 5.0;
-        this.intervalloIncremento = 5000;
-        this.vita = 0;
-        this.tempoDiRigenerazione = 0
+        this.currentSpeed = 1;
+        this.score = 0;
+        this.targetScore = 0;
+        this.scoreIncrement = 2;
+        this.maxSpeed = 5.0;
+        this.incrementInterval = 5000;
+        this.health = 0;
+        this.regenerationTime = 0;
     }
 
     preload() {
-        this.load.image('sfondo', 'assets/background.png');
-        this.load.image('sfondono', 'assets/background.png');
-        this.load.spritesheet('suelo', 'assets/ground.png', {
+        this.load.image('background', 'assets/background.png');
+        this.load.image('backgroundTexture', 'assets/background.png');
+        this.load.spritesheet('ground', 'assets/ground.png', {
             frameWidth: 16,
             frameHeight: 16
         });
-        this.load.image('pezzo', 'assets/piece.png');
-        this.load.image('cuore', 'assets/heart.png');
-        this.load.atlas('carattere', './assets/CharacterSheetSprite.png', './assets/CharacterSheet.json');
-        this.load.atlas('animaPezzo', './assets/coinsAnim.png', './assets/coinsAnim.json');
+        this.load.image('coin', 'assets/piece.png');
+        this.load.image('heart', 'assets/heart.png');
+        this.load.atlas('character', './assets/CharacterSheetSprite.png', './assets/CharacterSheet.json');
+        this.load.atlas('coinAnim', './assets/coinsAnim.png', './assets/coinsAnim.json');
 
-        this.load.spritesheet('trappola', 'assets/trap_for_paths.png', {
+        this.load.spritesheet('trap', 'assets/trap_for_paths.png', {
             frameWidth: 16,
             frameHeight: 16
         });
 
-        this.load.image('coniglio', 'assets/rabbit.png');
-        this.load.image('tartaruga', 'assets/turtle.png');
+        this.load.image('rabbit', 'assets/rabbit.png');
+        this.load.image('turtle', 'assets/turtle.png');
 
-        this.load.image('crate', 'assets/case.png')
-        this.load.audio('crate-sound', 'assets/audio/apertura_del_caso.m4a');
-        this.load.audio('foresta', 'assets/audio/foresta.mp3');
-        this.load.audio('temaPrincpale', 'assets/audio/temaPrincipale.mp3');
-        this.load.audio('saltare', 'assets/audio/saltare.m4a');
-        this.load.audio('danno', 'assets/audio/danno.m4a');
-        this.load.audio('temaMorte', 'assets/audio/temaMorte.m4a');
-        this.load.audio('sonoPieca', 'assets/audio/pieca.m4a');
+        this.load.image('crate', 'assets/case.png');
+        this.load.audio('crate-sound', 'assets/audio/case_opening.m4a');
+        this.load.audio('forest', 'assets/audio/forest.mp3');
+        this.load.audio('mainTheme', 'assets/audio/themePrincipal.mp3');
+        this.load.audio('jump', 'assets/audio/jump.m4a');
+        this.load.audio('damage', 'assets/audio/damage.m4a');
+        this.load.audio('deathTheme', 'assets/audio/themeDeath.m4a');
+        this.load.audio('coinSound', 'assets/audio/coins.m4a');
     }
+
     create() {
-        this.velocitaCorrente = 1;
-        this.punteggio = 0;
-        this.punteggioTarget = 0;
-        this.incrementoPunteggio = 2;
-        this.vita = 3;
-        this.tempoDiRigenerazione = 0;
-        this.animazioneCassaAttiva = false;
+        this.currentSpeed = 1;
+        this.score = 0;
+        this.targetScore = 0;
+        this.scoreIncrement = 2;
+        this.health = 3;
+        this.regenerationTime = 0;
+        this.crateAnimationActive = false;
 
-        this.casse = this.physics.add.group();
-        this.nomeUtente = localStorage.getItem("playerName") || "";
+        this.crates = this.physics.add.group();
+        this.userName = localStorage.getItem("playerName") || "";
         this.camera = this.cameras.main;
-        this.ostacolo = this.physics.add.group();
-        this.monete = this.physics.add.group();
-        this.ostacolo = this.physics.add.group();
-        this.sfondo = this.add.tileSprite(0, 0, this.cameras.main.width, this.cameras.main.height, 'sfondo');
-        this.sfondo.setOrigin(0, 0);
-        this.sfondo.setAlpha(0.5);
+        this.obstacle = this.physics.add.group();
+        this.coins = this.physics.add.group();
+        this.obstacle = this.physics.add.group();
+        this.background = this.add.tileSprite(0, 0, this.cameras.main.width, this.cameras.main.height, 'background');
+        this.background.setOrigin(0, 0);
+        this.background.setAlpha(0.5);
 
+        this.forestSound = this.sound.add('forest', { loop: true, volume: 0.2 });
+        this.forestSound.play();
 
-        this.forestaSono = this.sound.add('foresta', { loop: true, volume: 0.2 });
-        this.forestaSono.play();
-        
-        this.temaPrincipale = this.sound.add('temaPrincpale', { loop: true, volume: 0.3 });
-        this.temaPrincipale.play();
+        this.mainTheme = this.sound.add('mainTheme', { loop: true, volume: 0.3 });
+        this.mainTheme.play();
 
-        this.saltareAudio = this.sound.add('saltare', { loop: false, volume: 0.5 });
-        this.danno = this.sound.add('danno', { loop: false, volume: 4 });
-        this.temaMorte = this.sound.add('temaMorte', { loop: false, volume: 0.6 });
-        this.sonoPieca = this.sound.add('sonoPieca', { volume: 0.2 });
-
-
+        this.jumpAudio = this.sound.add('jump', { loop: false, volume: 0.5 });
+        this.damage = this.sound.add('damage', { loop: false, volume: 4 });
+        this.deathTheme = this.sound.add('deathTheme', { loop: false, volume: 0.6 });
+        this.coinSound = this.sound.add('coinSound', { volume: 0.2 });
 
         this.anims.create({
-            key: "caratrappolaChiusa",
-            frames: this.anims.generateFrameNumbers('trappola', { frames: [0, 1, 2, 3] }),
+            key: "trapClosing",
+            frames: this.anims.generateFrameNumbers('trap', { frames: [0, 1, 2, 3] }),
             frameRate: 8,
             repeat: 0
         });
 
         this.anims.create({
             key: 'death',
-            frames: this.anims.generateFrameNames('carattere', { prefix: 'death', end: 4, zeroPad: 2 }),
+            frames: this.anims.generateFrameNames('character', { prefix: 'death', end: 4, zeroPad: 2 }),
             frameRate: 8,
         });
 
         this.anims.create({
             key: 'rotate',
-            frames: this.anims.generateFrameNames('animaPezzo', { prefix: 'coin', end: 8, zeroPad: 2 }),
+            frames: this.anims.generateFrameNames('coinAnim', { prefix: 'coin', end: 8, zeroPad: 2 }),
             frameRate: 8,
         });
 
-        this.suolo = this.add.tileSprite(
+        this.ground = this.add.tileSprite(
             0,
             this.cameras.main.height - 40,
             this.cameras.main.width,
             16,
-            'suelo'
+            'ground'
         );
 
-        this.suolo.setOrigin(0, 0);
-        this.suolo.setScale(3);
+        this.ground.setOrigin(0, 0);
+        this.ground.setScale(3);
 
-        this.Giocatore = this.physics.add.sprite(80, 200, 'carattere');
-        this.physics.add.existing(this.suolo, true);
+        this.Player = this.physics.add.sprite(80, 200, 'character');
+        this.physics.add.existing(this.ground, true);
 
-        this.Giocatore = this.physics.add.sprite(80, 200, 'carattere');
+        this.Player = this.physics.add.sprite(80, 200, 'character');
 
-
-        this.physics.add.collider(this.Giocatore, this.suolo);
-        this.Giocatore.setSize(62, 105);
-        this.Giocatore.setOffset(16, 16);
-        this.Giocatore.setCollideWorldBounds(true);
+        this.physics.add.collider(this.Player, this.ground);
+        this.Player.setSize(62, 105);
+        this.Player.setOffset(16, 16);
+        this.Player.setCollideWorldBounds(true);
         this.physics.world.setBounds(0, 0, this.cameras.main.width, this.cameras.main.height);
-        this.Giocatore.setBounce(0.3);
-        this.Giocatore.setGravityY(800);
+        this.Player.setBounce(0.3);
+        this.Player.setGravityY(800);
 
         this.anims.create({
             key: 'run',
-            frames: this.anims.generateFrameNames('carattere', { prefix: 'run', end: 4, zeroPad: 2 }),
+            frames: this.anims.generateFrameNames('character', { prefix: 'run', end: 4, zeroPad: 2 }),
             frameRate: 10,
             repeat: -1
         });
 
         this.anims.create({
             key: 'jump',
-            frames: this.anims.generateFrameNames('carattere', { prefix: 'jump', end: 3, zeroPad: 2 }),
+            frames: this.anims.generateFrameNames('character', { prefix: 'jump', end: 3, zeroPad: 2 }),
             frameRate: 10,
         });
 
-        // UI Punteggio
-        this.add.image(15, 5, 'pezzo').setOrigin(0, 0).setScale(0.15);
-        this.testoPunteggio = this.add.text(
+        // UI Score
+        this.add.image(15, 5, 'coin').setOrigin(0, 0).setScale(0.15);
+        this.scoreText = this.add.text(
             90,
             15,
             '0', {
@@ -183,10 +180,10 @@ export class Game extends Phaser.Scene {
             fontSize: '52px',
             color: '#fff'
         });
-        this.testoPunteggio.setScrollFactor(0);
+        this.scoreText.setScrollFactor(0);
 
-        this.add.image(this.cameras.main.width - 175, 5, 'cuore').setOrigin(0, 0).setScale(0.2);
-        this.testoVita = this.add.text(
+        this.add.image(this.cameras.main.width - 175, 5, 'heart').setOrigin(0, 0).setScale(0.2);
+        this.healthText = this.add.text(
             this.cameras.main.width - 75,
             10,
             '0', {
@@ -194,12 +191,12 @@ export class Game extends Phaser.Scene {
             fontSize: '52px',
             color: '#fff'
         });
-        this.testoVita.setScrollFactor(0);
-        this.vita = 3;
-        this.testoVita.setText('3');
-        this.cursori = this.input.keyboard?.createCursorKeys() || {} as Phaser.Types.Input.Keyboard.CursorKeys;
+        this.healthText.setScrollFactor(0);
+        this.health = 3;
+        this.healthText.setText('3');
+        this.cursors = this.input.keyboard?.createCursorKeys() || {} as Phaser.Types.Input.Keyboard.CursorKeys;
 
-        this.tasti = this.input.keyboard?.addKeys({
+        this.keys = this.input.keyboard?.addKeys({
             z: Phaser.Input.Keyboard.KeyCodes.Z,
             spaceBar: Phaser.Input.Keyboard.KeyCodes.SPACE,
             s: Phaser.Input.Keyboard.KeyCodes.S,
@@ -207,47 +204,46 @@ export class Game extends Phaser.Scene {
             w: Phaser.Input.Keyboard.KeyCodes.W
         });
 
-        this.Giocatore.play('run');
+        this.Player.play('run');
 
         this.time.addEvent({
             delay: 1000,
             callback: () => {
-                this.calcolaNuovoPunteggioTarget();
+                this.calculateNewTargetScore();
             },
             callbackScope: this,
             loop: true
         });
 
-        this.timerIncrementoPunteggio = this.time.addEvent({
+        this.scoreIncrementTimer = this.time.addEvent({
             delay: 100,
-            callback: this.aggiornaDisplayPunteggio,
+            callback: this.updateScoreDisplay,
             callbackScope: this,
             loop: true
         });
 
         this.time.addEvent({
-            delay: this.intervalloIncremento,
-            callback: this.aumentaVelocita,
+            delay: this.incrementInterval,
+            callback: this.increaseSpeed,
             callbackScope: this,
             loop: true
         });
-        this.cursori = this?.input?.keyboard?.createCursorKeys();
-
+        this.cursors = this?.input?.keyboard?.createCursorKeys();
 
         this.time.addEvent({
             delay: 8000,
             callback: () => {
 
                 if (Math.random() < 0.3) {
-                    this.generaCassa();
+                    this.generateCrate();
                 }
 
-                const minRitardo = Math.max(4000, 8000 - (this.velocitaCorrente * 400));
-                const maxRitardo = Math.max(7000, 12000 - (this.velocitaCorrente * 400));
+                const minDelay = Math.max(4000, 8000 - (this.currentSpeed * 400));
+                const maxDelay = Math.max(7000, 12000 - (this.currentSpeed * 400));
 
                 this.time.addEvent({
-                    delay: Phaser.Math.Between(minRitardo, maxRitardo),
-                    callback: this.generaCassa,
+                    delay: Phaser.Math.Between(minDelay, maxDelay),
+                    callback: this.generateCrate,
                     callbackScope: this,
                     loop: false
                 });
@@ -257,208 +253,207 @@ export class Game extends Phaser.Scene {
         });
 
         this.physics.add.overlap(
-            this.Giocatore,
-            this.casse,
-            this.collisioneGiocatoreCassa,
+            this.Player,
+            this.crates,
+            this.playerCrateCollision,
             undefined,
             this
         );
 
-        this.inizializzaCollisione()
-        this.uovoDiPasqua()
+        this.initializeCollision();
+        this.easterEgg();
         EventBus.emit('current-scene-ready', this);
 
-        this.ultimoOstacoloX = 0;
-        this.distanzaMinima = 600;
-        this.difficoltaCorrente = 1;
-        
+        this.lastObstacleX = 0;
+        this.minDistance = 600;
+        this.currentDifficulty = 1;
+
         this.time.addEvent({
-            delay: 10000, 
-            callback: this.aumentareDifficolta,
+            delay: 10000,
+            callback: this.increaseDifficulty,
             callbackScope: this,
             loop: true
         });
 
         this.time.addEvent({
-            delay: 950, 
-            callback: this.generaMoneteRandom,
+            delay: 950,
+            callback: this.generateRandomCoins,
             callbackScope: this,
             loop: true
         });
 
-        this.suoloCollisione = this.physics.add.staticBody(0, this.cameras.main.height - 30, this.cameras.main.width, 20);
-        this.physics.add.collider(this.Giocatore, this.suoloCollisione);
+        this.groundCollision = this.physics.add.staticBody(0, this.cameras.main.height - 30, this.cameras.main.width, 20);
+        this.physics.add.collider(this.Player, this.groundCollision);
     }
 
-    uovoDiPasqua() {
-        if (this.nomeUtente.toLocaleLowerCase() == "phoenix") {
+    easterEgg() {
+        if (this.userName.toLocaleLowerCase() == "phoenix") {
             this.camera.setBackgroundColor(0xff0000);
 
-            this.sfondono = this.add.image(512, 384, 'sfondono');
-            this.sfondono.setAlpha(0.5);
+            this.backgroundTexture = this.add.image(512, 384, 'backgroundTexture');
+            this.backgroundTexture.setAlpha(0.5);
         }
     }
 
-    luogoOstacolo() {
-        const distanzaNecessaria = this.distanzaMinima;
-        const ultimaPosizione = this.ultimoOstacoloX;
-        const posizioneCorrente = this.cameras.main.width;
-        
-        if (posizioneCorrente - ultimaPosizione < distanzaNecessaria) {
-            return; 
-        }
-        
-        const probabilitaBase = 0.15; 
-        const probabilitaAttuale = Math.min(probabilitaBase * this.difficoltaCorrente, 0.7);
-        
+    placeObstacle() {
+        const requiredDistance = this.minDistance;
+        const lastPosition = this.lastObstacleX;
+        const currentPosition = this.cameras.main.width;
 
-        if (Math.random() > probabilitaAttuale) {
-            return; 
+        if (currentPosition - lastPosition < requiredDistance) {
+            return;
         }
-        
-        const probabilitaDoppio = Math.min(0.1 * this.difficoltaCorrente, 0.5);
-        const numeroPiege = Math.random() < probabilitaDoppio ? 2 : 1;
-        
-        this.creaTrampa(this.cameras.main.width);
-        
-        if (numeroPiege === 2) {
-            const distanzaTraTrappe = 300 - (this.velocitaCorrente * 10);
-            this.creaTrampa(this.cameras.main.width + distanzaTraTrappe);
+
+        const baseProbability = 0.15;
+        const currentProbability = Math.min(baseProbability * this.currentDifficulty, 0.7);
+
+        if (Math.random() > currentProbability) {
+            return;
         }
-        
-        this.ultimoOstacoloX = this.cameras.main.width + (numeroPiege === 2 ? 200 - (this.velocitaCorrente * 10) : 0);
-        
-        this.distanzaMinima = 600 - (this.velocitaCorrente * 50);
-        this.distanzaMinima = Math.max(this.distanzaMinima, 300);
+
+        const doubleProbability = Math.min(0.1 * this.currentDifficulty, 0.5);
+        const numTraps = Math.random() < doubleProbability ? 2 : 1;
+
+        this.createTrap(this.cameras.main.width);
+
+        if (numTraps === 2) {
+            const distanceBetweenTraps = 300 - (this.currentSpeed * 10);
+            this.createTrap(this.cameras.main.width + distanceBetweenTraps);
+        }
+
+        this.lastObstacleX = this.cameras.main.width + (numTraps === 2 ? 200 - (this.currentSpeed * 10) : 0);
+
+        this.minDistance = 600 - (this.currentSpeed * 50);
+        this.minDistance = Math.max(this.minDistance, 300);
     }
 
-    creaTrampa(posizioneX: number) {
-        const trampa = this.physics.add.sprite(
-            posizioneX, 
+    createTrap(positionX: number) {
+        const trap = this.physics.add.sprite(
+            positionX,
             this.cameras.main.height - 57,
-            'trappola'
+            'trap'
         );
-        
-        trampa.setFrame(0);
-        this.ostacolo.add(trampa);
-        trampa.setScale(4);
-        trampa.setSize(15, 5);
 
-        trampa.setImmovable(true);
-        trampa.body.setAllowGravity(false);
-        trampa.setData('haColpito', false);
+        trap.setFrame(0);
+        this.obstacle.add(trap);
+        trap.setScale(4);
+        trap.setSize(15, 5);
+
+        trap.setImmovable(true);
+        trap.body.setAllowGravity(false);
+        trap.setData('hasHit', false);
 
         if (Math.random() < 0.4) {
-            this.creaMoneta(posizioneX);
+            this.createCoin(positionX);
         }
     }
 
-    creaMoneta(posizioneX: number, posizioneY?: number): void {
-        const moneta = this.physics.add.sprite(
-            posizioneX,
-            posizioneY || this.cameras.main.height - 57 - Phaser.Math.Between(50, 200),
-            'coinsAnim'
+    createCoin(positionX: number, positionY?: number): void {
+        const coin = this.physics.add.sprite(
+            positionX,
+            positionY || this.cameras.main.height - 57 - Phaser.Math.Between(50, 200),
+            'coinAnim'
         );
-        
-        moneta.play('rotate', true);
-        this.monete.add(moneta);
-        moneta.setScale(0.3); 
-        moneta.setSize(50, 50);
-        
-        moneta.setImmovable(true);
-        moneta.body.setAllowGravity(false);
-        
-        if (moneta.body) {
-            (moneta.body as Phaser.Physics.Arcade.Body).checkCollision.up = false;
-            (moneta.body as Phaser.Physics.Arcade.Body).checkCollision.down = false;
-            (moneta.body as Phaser.Physics.Arcade.Body).checkCollision.left = false;
-            (moneta.body as Phaser.Physics.Arcade.Body).checkCollision.right = false;
+
+        coin.play('rotate', true);
+        this.coins.add(coin);
+        coin.setScale(0.3);
+        coin.setSize(50, 50);
+
+        coin.setImmovable(true);
+        coin.body.setAllowGravity(false);
+
+        if (coin.body) {
+            (coin.body as Phaser.Physics.Arcade.Body).checkCollision.up = false;
+            (coin.body as Phaser.Physics.Arcade.Body).checkCollision.down = false;
+            (coin.body as Phaser.Physics.Arcade.Body).checkCollision.left = false;
+            (coin.body as Phaser.Physics.Arcade.Body).checkCollision.right = false;
         }
-        
-        moneta.setData('collected', false);
+
+        coin.setData('collected', false);
     }
 
-    collisioneTrappola(ostacolo: Phaser.Physics.Arcade.Sprite) {
-        if (ostacolo.getData('hasCollided')) {
+    trapCollision(obstacle: Phaser.Physics.Arcade.Sprite) {
+        if (obstacle.getData('hasCollided')) {
             return;
         }
 
-        ostacolo.setData('hasCollided', true);
+        obstacle.setData('hasCollided', true);
 
-        ostacolo.play("caratrappolaChiusa", true);
+        obstacle.play("trapClosing", true);
 
-        ostacolo.once('animationcomplete', () => {
-            ostacolo.destroy();
+        obstacle.once('animationcomplete', () => {
+            obstacle.destroy();
         });
 
-        if (this.Giocatore.getData('invincible')) {
+        if (this.Player.getData('invincible')) {
             return;
         }
 
-        this.danno.play();
-        this.vita -= 1;
-        this.testoVita.setText('' + this.vita);
+        this.damage.play();
+        this.health -= 1;
+        this.healthText.setText('' + this.health);
 
-        if (this.vita <= 0) {
+        if (this.health <= 0) {
             this.time.delayedCall(500, () => {
-                this.cambiaScena();
+                this.changeScene();
             });
         }
     }
 
-    collisionePezzo(giocatore: Phaser.Physics.Arcade.Sprite, pezzo: Phaser.Physics.Arcade.Sprite) {
-        if (pezzo.getData('collected')) {
+    coinCollision(player: Phaser.Physics.Arcade.Sprite, coin: Phaser.Physics.Arcade.Sprite) {
+        if (coin.getData('collected')) {
             return;
         }
 
-        pezzo.setData('collected', true);
-        
+        coin.setData('collected', true);
+
         // Play sound effect
-        this.sonoPieca.play();
-        
+        this.coinSound.play();
+
         // Add points
-        this.punteggio += 50;
-        this.punteggioTarget = this.punteggio;
-        this.testoPunteggio.setText('' + this.punteggio);
-        
+        this.score += 50;
+        this.targetScore = this.score;
+        this.scoreText.setText('' + this.score);
+
         this.tweens.add({
-            targets: pezzo,
-            y: pezzo.y - 50,
+            targets: coin,
+            y: coin.y - 50,
             alpha: 0,
             scale: 0.5,
             duration: 300,
             onComplete: () => {
-                pezzo.destroy();
+                coin.destroy();
             }
         });
     }
 
-
-    inizializzaCollisione() {
+    initializeCollision() {
         this.physics.add.overlap(
-            this.Giocatore,
-            this.ostacolo,
-            (giocatore, ostacolo) => {
-                this.collisioneTrappola(ostacolo as Phaser.Physics.Arcade.Sprite);
+            this.Player,
+            this.obstacle,
+            (player, obstacle) => {
+                this.trapCollision(obstacle as Phaser.Physics.Arcade.Sprite);
             }
         );
 
         this.physics.add.overlap(
-            this.Giocatore,
-            this.monete,
-            (giocatore, moneta) => {
-                this.collisionePezzo(giocatore as Phaser.Physics.Arcade.Sprite, moneta as Phaser.Physics.Arcade.Sprite);
+            this.Player,
+            this.coins,
+            (player, coin) => {
+                this.coinCollision(player as Phaser.Physics.Arcade.Sprite, coin as Phaser.Physics.Arcade.Sprite);
             }
         );
     }
+
     update(delta: number) {
 
-        if (this.vita <= 0) {
-            this.velocitaCorrente = 0;
-            this.ostacolo.getChildren().forEach((child) => {
+        if (this.health <= 0) {
+            this.currentSpeed = 0;
+            this.obstacle.getChildren().forEach((child) => {
                 (child as Phaser.Physics.Arcade.Sprite).setVelocity(0);
             });
-            this.casse.getChildren().forEach((child) => {
+            this.crates.getChildren().forEach((child) => {
                 (child as Phaser.Physics.Arcade.Sprite).setVelocity(0);
             });
             this.physics.pause();
@@ -468,238 +463,230 @@ export class Game extends Phaser.Scene {
             });
         }
 
-        Phaser.Actions.IncX(this.ostacolo.getChildren(), -this.velocitaCorrente * 3);
-        
-        if (this.ostacolo.getLength() > 0) {
-            let ostacoloPiuLontano = 0;
-            this.ostacolo.getChildren().forEach((child) => {
-                const ostacolo = child as Phaser.Physics.Arcade.Sprite;
-                if (ostacolo.x > ostacoloPiuLontano) {
-                    ostacoloPiuLontano = ostacolo.x;
+        Phaser.Actions.IncX(this.obstacle.getChildren(), -this.currentSpeed * 3);
+
+        if (this.obstacle.getLength() > 0) {
+            let furthestObstacle = 0;
+            this.obstacle.getChildren().forEach((child) => {
+                const obstacle = child as Phaser.Physics.Arcade.Sprite;
+                if (obstacle.x > furthestObstacle) {
+                    furthestObstacle = obstacle.x;
                 }
             });
-            
-            if (ostacoloPiuLontano > 0) {
-                this.ultimoOstacoloX = ostacoloPiuLontano;
+
+            if (furthestObstacle > 0) {
+                this.lastObstacleX = furthestObstacle;
             } else {
-                this.ultimoOstacoloX = 0;
+                this.lastObstacleX = 0;
             }
         }
 
-        this.tempoDiRigenerazione += delta;
-        if (this.tempoDiRigenerazione >= 300) {
-            this.luogoOstacolo();
-            this.tempoDiRigenerazione = 0;
+        this.regenerationTime += delta;
+        if (this.regenerationTime >= 300) {
+            this.placeObstacle();
+            this.regenerationTime = 0;
         }
 
-        this.sfondo.tilePositionX += this.velocitaCorrente;
-        this.suolo.tilePositionX += this.velocitaCorrente;
+        this.background.tilePositionX += this.currentSpeed;
+        this.ground.tilePositionX += this.currentSpeed;
 
+        const playerOnGround = this.Player.body ? (this.Player.body.touching.down || this.Player.body.blocked.down) : false;
+        if ((this.keys?.spaceBar?.isDown || this.cursors?.space?.isDown || this.keys?.z?.isDown || this.keys?.w?.isDown || this.cursors?.up.isDown) && playerOnGround) {
+            this.jumpAudio.play();
 
-        const giocatoreSulTerreno = this.Giocatore.body ? (this.Giocatore.body.touching.down || this.Giocatore.body.blocked.down) : false;
-        if ((this.tasti?.spaceBar?.isDown || this.cursori?.space?.isDown || this.tasti?.z?.isDown || this.tasti?.w?.isDown || this.cursori?.up.isDown) && giocatoreSulTerreno) {
-            this.saltareAudio.play();
-
-            this.Giocatore.setVelocityY(-600);
-            this.Giocatore.play('jump', true);
+            this.Player.setVelocityY(-600);
+            this.Player.play('jump', true);
             this.time.delayedCall(500, () => {
-                this.Giocatore.play('run', true);
+                this.Player.play('run', true);
             });
-            this.Giocatore.setBounce(0);
+            this.Player.setBounce(0);
         }
 
-        if ((this.tasti?.s?.isDown || this.tasti?.down?.isDown) && !giocatoreSulTerreno) {
-            this.Giocatore.setVelocityY(600);
-            this.Giocatore.setBounce(0);
+        if ((this.keys?.s?.isDown || this.keys?.down?.isDown) && !playerOnGround) {
+            this.Player.setVelocityY(600);
+            this.Player.setBounce(0);
         }
 
-
-
-        if (giocatoreSulTerreno && this.Giocatore.body && this.Giocatore.body.velocity.y === 0) {
-            if (this.Giocatore.anims.currentAnim?.key !== 'run') {
-                this.Giocatore.play('run', true);
+        if (playerOnGround && this.Player.body && this.Player.body.velocity.y === 0) {
+            if (this.Player.anims.currentAnim?.key !== 'run') {
+                this.Player.play('run', true);
             }
         }
 
+        this.updateCrates();
 
-        
+        this.updateCoins();
 
-        this.aggiornaCasse();
-
-        this.aggiornaMonete(); 
-
-        // Nettoyage des pièces qui sortent de l'écran (à ajouter après aggiornaCasse())
-        this.monete.getChildren().forEach((child) => {
-            const moneta = child as Phaser.Physics.Arcade.Sprite;
-            if (moneta.x < -moneta.displayWidth) {
-                moneta.destroy();
+        // Cleaning coins that go off-screen (to add after updateCrates())
+        this.coins.getChildren().forEach((child) => {
+            const coin = child as Phaser.Physics.Arcade.Sprite;
+            if (coin.x < -coin.displayWidth) {
+                coin.destroy();
             }
         });
-
     }
 
-    calcolaNuovoPunteggioTarget() {
-        const bonusVelocita = Math.floor(this.velocitaCorrente * 100);
-        this.punteggioTarget += 1 + bonusVelocita;
+    calculateNewTargetScore() {
+        const speedBonus = Math.floor(this.currentSpeed * 100);
+        this.targetScore += 1 + speedBonus;
     }
 
-    aggiornaDisplayPunteggio() {
-        if (this.punteggio < this.punteggioTarget) {
-            this.punteggio += this.incrementoPunteggio;
+    updateScoreDisplay() {
+        if (this.score < this.targetScore) {
+            this.score += this.scoreIncrement;
 
-            if (this.punteggio > this.punteggioTarget) {
-                this.punteggio = this.punteggioTarget;
+            if (this.score > this.targetScore) {
+                this.score = this.targetScore;
             }
 
-            this.testoPunteggio.setText('' + this.punteggio);
+            this.scoreText.setText('' + this.score);
         }
     }
 
-    cambiaScena() {
-        this.Giocatore.play('death', true);
-        this.forestaSono.stop();
-        this.temaPrincipale.stop();
-        this.temaMorte.play();
-        
-        // Sauvegarde le score
-        const infoGiocatore = JSON.stringify({
-            name: this.nomeUtente,
-            score: this.punteggio
+    changeScene() {
+        this.Player.play('death', true);
+        this.forestSound.stop();
+        this.mainTheme.stop();
+        this.deathTheme.play();
+
+        // Save the score
+        const playerInfo = JSON.stringify({
+            name: this.userName,
+            score: this.score
         });
 
-        let prossimoIndice = 1;
-        while (localStorage.getItem(`playerInfo${prossimoIndice}`)) {
-            prossimoIndice++;
+        let nextIndex = 1;
+        while (localStorage.getItem(`playerInfo${nextIndex}`)) {
+            nextIndex++;
         }
 
-        localStorage.setItem(`playerInfo${prossimoIndice}`, infoGiocatore);
-        
+        localStorage.setItem(`playerInfo${nextIndex}`, playerInfo);
+
         this.time.delayedCall(5000, () => {
             this.scene.start('GameOver');
         });
     }
 
-    private aumentaVelocita(): void {
-        const valoreIncremento = 0.2;
-        this.velocitaCorrente += valoreIncremento;
+    private increaseSpeed(): void {
+        const incrementValue = 0.2;
+        this.currentSpeed += incrementValue;
 
-        if (this.velocitaCorrente > this.velocitaMassima) {
-            this.velocitaCorrente = this.velocitaMassima;
+        if (this.currentSpeed > this.maxSpeed) {
+            this.currentSpeed = this.maxSpeed;
         }
     }
 
-    private generaCassa(): void {
+    private generateCrate(): void {
         const y = Phaser.Math.Between(this.cameras.main.height - 325, this.cameras.main.height - 250);
-        const cassa = this.casse.create(this.cameras.main.width + 100, y, 'crate');
-        cassa.setOrigin(0, 0);
-        cassa.setScale(0.3);
-
+        const crate = this.crates.create(this.cameras.main.width + 100, y, 'crate');
+        crate.setOrigin(0, 0);
+        crate.setScale(0.3);
 
         // Set collision body properties for the crate
-        cassa.body.setSize(cassa.width * 0.8, cassa.height * 0.8);
-        cassa.body.setOffset(cassa.width * 0.1, cassa.height * 0.1);
+        crate.body.setSize(crate.width * 0.8, crate.height * 0.8);
+        crate.body.setOffset(crate.width * 0.1, crate.height * 0.1);
 
         // Add visual depth and shadow effect
-        cassa.setDepth(5);
+        crate.setDepth(5);
         this.tweens.add({
-            targets: cassa,
+            targets: crate,
             y: y + 10,
             duration: 1000,
             yoyo: true,
             repeat: -1,
             ease: 'Sine.easeInOut'
         });
-        cassa.setImmovable(true);
-        cassa.body.allowGravity = false;
-        
-        if (cassa.body) {
-            (cassa.body as Phaser.Physics.Arcade.Body).checkCollision.up = false;
-            (cassa.body as Phaser.Physics.Arcade.Body).checkCollision.down = false;
-            (cassa.body as Phaser.Physics.Arcade.Body).checkCollision.left = false;
-            (cassa.body as Phaser.Physics.Arcade.Body).checkCollision.right = false;
+        crate.setImmovable(true);
+        crate.body.allowGravity = false;
+
+        if (crate.body) {
+            (crate.body as Phaser.Physics.Arcade.Body).checkCollision.up = false;
+            (crate.body as Phaser.Physics.Arcade.Body).checkCollision.down = false;
+            (crate.body as Phaser.Physics.Arcade.Body).checkCollision.left = false;
+            (crate.body as Phaser.Physics.Arcade.Body).checkCollision.right = false;
         }
     }
 
-    private aggiornaCasse(): void {
-        this.casse.getChildren().forEach((child) => {
-            const cassa = child as Phaser.Physics.Arcade.Sprite;
+    private updateCrates(): void {
+        this.crates.getChildren().forEach((child) => {
+            const crate = child as Phaser.Physics.Arcade.Sprite;
 
-            cassa.x -= this.velocitaCorrente * 3;
+            crate.x -= this.currentSpeed * 3;
 
-            if (cassa.x < -cassa.displayWidth) {
-                cassa.destroy();
+            if (crate.x < -crate.displayWidth) {
+                crate.destroy();
             }
         });
     }
 
-    private aggiornaMonete(): void {
-        this.monete.getChildren().forEach((child) => {
-            const moneta = child as Phaser.Physics.Arcade.Sprite;
-            moneta.x -= this.velocitaCorrente * 3; // Même vitesse que les obstacles
-            
-            if (moneta.x < -moneta.displayWidth) {
-                moneta.destroy();
+    private updateCoins(): void {
+        this.coins.getChildren().forEach((child) => {
+            const coin = child as Phaser.Physics.Arcade.Sprite;
+            coin.x -= this.currentSpeed * 3; // Same speed as obstacles
+
+            if (coin.x < -coin.displayWidth) {
+                coin.destroy();
             }
         });
     }
 
-    private collisioneGiocatoreCassa(giocatore: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile | Phaser.Physics.Arcade.Body | Phaser.Physics.Arcade.StaticBody, cassa: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile | Phaser.Physics.Arcade.Body | Phaser.Physics.Arcade.StaticBody): void {
-        (cassa as Phaser.Physics.Arcade.Sprite).destroy();
+    private playerCrateCollision(player: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile | Phaser.Physics.Arcade.Body | Phaser.Physics.Arcade.StaticBody, crate: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile | Phaser.Physics.Arcade.Body | Phaser.Physics.Arcade.StaticBody): void {
+        (crate as Phaser.Physics.Arcade.Sprite).destroy();
 
-        const tipiBonusArr = [
-            { name: 'pezzo', chance: 0.35, label: "Punti +", color: 0xFFD700, icon: 'pezzo' },
-            { name: 'cuore', chance: 0.25, label: "Vite +", color: 0xFF0000, icon: 'cuore' },
-            { name: 'coniglio', chance: 0.20, label: "Velocità +", color: 0x00FF00, icon: 'coniglio' },
-            { name: 'tartaruga', chance: 0.15, label: "Velocità -", color: 0x0000FF, icon: 'tartaruga' },
-            { name: 'fenice', chance: 0.05, label: "Invincibile!", color: 0xFF00FF, icon: 'fenice' }
+        const bonusTypesArr = [
+            { name: 'coin', chance: 0.35, label: "Points +", color: 0xFFD700, icon: 'coin' },
+            { name: 'heart', chance: 0.25, label: "Lives +", color: 0xFF0000, icon: 'heart' },
+            { name: 'rabbit', chance: 0.20, label: "Speed +", color: 0x00FF00, icon: 'rabbit' },
+            { name: 'turtle', chance: 0.15, label: "Speed -", color: 0x0000FF, icon: 'turtle' },
+            { name: 'phoenix', chance: 0.05, label: "Invincible!", color: 0xFF00FF, icon: 'phoenix' }
         ];
 
-        const probabilitaTotale = tipiBonusArr.reduce((sum, type) => sum + type.chance, 0);
-        let tipiBonusNormalizzati = tipiBonusArr.map(type => ({
+        const totalProbability = bonusTypesArr.reduce((sum, type) => sum + type.chance, 0);
+        let normalizedBonusTypes = bonusTypesArr.map(type => ({
             ...type,
-            chance: type.chance / probabilitaTotale
+            chance: type.chance / totalProbability
         }));
 
-        const valoreCasuale = Math.random();
-        let probabilitaCumulativa = 0;
-        let bonusSelezionato = null;
+        const randomValue = Math.random();
+        let cumulativeProbability = 0;
+        let selectedBonus = null;
 
-        for (const tipoBonus of tipiBonusNormalizzati) {
-            probabilitaCumulativa += tipoBonus.chance;
-            if (valoreCasuale <= probabilitaCumulativa) {
-                bonusSelezionato = tipoBonus;
+        for (const bonusType of normalizedBonusTypes) {
+            cumulativeProbability += bonusType.chance;
+            if (randomValue <= cumulativeProbability) {
+                selectedBonus = bonusType;
                 break;
             }
         }
 
-        if (bonusSelezionato) {
-            this.mostraAnimazioneCassa(bonusSelezionato);
+        if (selectedBonus) {
+            this.showCrateAnimation(selectedBonus);
         }
     }
 
-    private mostraAnimazioneCassa(bonusSelezionato: any): void {
-        if (this.animazioneCassaAttiva) {
+    private showCrateAnimation(selectedBonus: any): void {
+        if (this.crateAnimationActive) {
             return;
         }
 
-        this.animazioneCassaAttiva = true;
+        this.crateAnimationActive = true;
 
-        const centroX = this.cameras.main.width / 2;
-        const centroY = this.cameras.main.height / 3;
+        const centerX = this.cameras.main.width / 2;
+        const centerY = this.cameras.main.height / 3;
 
-        const dimensioneCassa = 150;
-        const boxOggetto = this.add.rectangle(
-            centroX,
-            centroY,
-            dimensioneCassa,
-            dimensioneCassa,
+        const crateSize = 150;
+        const itemBox = this.add.rectangle(
+            centerX,
+            centerY,
+            crateSize,
+            crateSize,
             0xFFFFFF,
             0
         ).setOrigin(0.5);
 
-        const puntoInterrogativo = this.add.text(
-            centroX,
-            centroY,
+        const questionMark = this.add.text(
+            centerX,
+            centerY,
             '?',
             {
                 fontFamily: 'minecraft',
@@ -708,62 +695,62 @@ export class Game extends Phaser.Scene {
             }
         ).setOrigin(0.5).setDepth(100);
 
-        boxOggetto.setDepth(98);
+        itemBox.setDepth(98);
 
-        const tuttiTipiBonus = [
-            { name: 'pezzo', label: "Punti +", color: 0xFFD700 },
-            { name: 'cuore', label: "Vite +", color: 0xFF0000 },
-            { name: 'coniglio', label: "Velocità +", color: 0x00FF00 },
-            { name: 'tartaruga', label: "Velocità -", color: 0x0000FF },
-            { name: 'fenice', label: "Invincibile!", color: 0xFF00FF }
+        const allBonusTypes = [
+            { name: 'coin', label: "Points +", color: 0xFFD700 },
+            { name: 'heart', label: "Lives +", color: 0xFF0000 },
+            { name: 'rabbit', label: "Speed +", color: 0x00FF00 },
+            { name: 'turtle', label: "Speed -", color: 0x0000FF },
+            { name: 'phoenix', label: "Invincible!", color: 0xFF00FF }
         ];
 
-        const dimensioneIcona = 60;
-        const iconaBonus = this.add.image(centroX, centroY, 'pezzo')
+        const iconSize = 60;
+        const bonusIcon = this.add.image(centerX, centerY, 'coin')
             .setVisible(false)
             .setOrigin(0.5)
             .setDepth(100)
-            .setScale(dimensioneIcona / 150);
+            .setScale(iconSize / 150);
 
-        let indiceCorrente = 0;
-        const velocitaCiclo = 100;
-        const tempoRotazione = 2000; 
-        const massimiCicli = Math.floor(tempoRotazione / velocitaCiclo);
-        let cicloCorrente = 0;
+        let currentIndex = 0;
+        const cycleSpeed = 100;
+        const rotationTime = 2000;
+        const maxCycles = Math.floor(rotationTime / cycleSpeed);
+        let currentCycle = 0;
 
         this.sound.play('crate-sound', { volume: 0.7 });
         this.time.delayedCall(500, () => {
-            puntoInterrogativo.destroy();
-            iconaBonus.setVisible(true);
+            questionMark.destroy();
+            bonusIcon.setVisible(true);
 
-            const intervalloGiratorio = this.time.addEvent({
-                delay: velocitaCiclo,
+            const spinInterval = this.time.addEvent({
+                delay: cycleSpeed,
                 callback: () => {
-                    indiceCorrente = (indiceCorrente + 1) % tuttiTipiBonus.length;
-                    cicloCorrente++;
+                    currentIndex = (currentIndex + 1) % allBonusTypes.length;
+                    currentCycle++;
 
-                    iconaBonus.setTexture(tuttiTipiBonus[indiceCorrente].name);
+                    bonusIcon.setTexture(allBonusTypes[currentIndex].name);
 
-                    if (tuttiTipiBonus[indiceCorrente].name === 'fenice') {
-                        iconaBonus.setScale((dimensioneIcona / 150) * 10);
+                    if (allBonusTypes[currentIndex].name === 'phoenix') {
+                        bonusIcon.setScale((iconSize / 150) * 10);
                     } else {
-                        iconaBonus.setScale(dimensioneIcona / 150);
+                        bonusIcon.setScale(iconSize / 150);
                     }
 
-                    if (cicloCorrente >= massimiCicli && tuttiTipiBonus[indiceCorrente].name === bonusSelezionato.name) {
-                        intervalloGiratorio.destroy();
+                    if (currentCycle >= maxCycles && allBonusTypes[currentIndex].name === selectedBonus.name) {
+                        spinInterval.destroy();
 
                         this.tweens.add({
-                            targets: [boxOggetto],
+                            targets: [itemBox],
                             alpha: 0.2,
                             yoyo: true,
                             repeat: 3,
                             duration: 200,
                             onComplete: () => {
-                                const testoBonus = this.add.text(
-                                    centroX,
-                                    centroY + dimensioneCassa / 2 + 30,
-                                    bonusSelezionato.label,
+                                const bonusText = this.add.text(
+                                    centerX,
+                                    centerY + crateSize / 2 + 30,
+                                    selectedBonus.label,
                                     {
                                         fontFamily: 'minecraft',
                                         fontSize: '32px',
@@ -775,18 +762,18 @@ export class Game extends Phaser.Scene {
 
                                 this.time.delayedCall(1200, () => {
                                     this.tweens.add({
-                                        targets: [boxOggetto, iconaBonus, testoBonus],
+                                        targets: [itemBox, bonusIcon, bonusText],
                                         alpha: 0,
                                         scale: 1.5,
                                         duration: 500,
                                         onComplete: () => {
-                                            boxOggetto.destroy();
-                                            iconaBonus.destroy();
-                                            testoBonus.destroy();
+                                            itemBox.destroy();
+                                            bonusIcon.destroy();
+                                            bonusText.destroy();
 
-                                            this.applicaBonus(bonusSelezionato);
+                                            this.applyBonus(selectedBonus);
 
-                                            this.animazioneCassaAttiva = false;
+                                            this.crateAnimationActive = false;
                                         }
                                     });
                                 });
@@ -800,129 +787,128 @@ export class Game extends Phaser.Scene {
         });
     }
 
-    private applicaBonus(bonusSelezionato: any): void {
-        switch (bonusSelezionato.name) {
-            case 'pezzo':
-                const BonusPezzo = new Pezzo({
-                    velocitaAttuale: this.velocitaCorrente,
-                    aggiornaPunteggio: this.punteggio
+    private applyBonus(selectedBonus: any): void {
+        switch (selectedBonus.name) {
+            case 'coin':
+                const coinBonus = new Pezzo({
+                    velocitaAttuale: this.currentSpeed,
+                    aggiornaPunteggio: this.score
                 });
 
-                const nuovoPunteggio = BonusPezzo.inizia();
+                const newScore = coinBonus.inizia();
 
-                this.punteggio = nuovoPunteggio;
-                this.punteggioTarget = nuovoPunteggio;
-                this.testoPunteggio.setText('' + this.punteggio);
+                this.score = newScore;
+                this.targetScore = newScore;
+                this.scoreText.setText('' + this.score);
                 break;
 
-            case 'cuore':
-                const bonusCuore = new Cuore({
-                    cuore: this.vita
+            case 'heart':
+                const heartBonus = new Cuore({
+                    cuore: this.health
                 });
 
-                const nuovaVita = bonusCuore.inizia();
+                const newHealth = heartBonus.inizia();
 
-                this.vita = nuovaVita;
+                this.health = newHealth;
 
-                if (this.vita >= 10) {
-                    this.vita = 9999;
-                    this.testoVita.setText('∞');
-                    this.testoVita.setPosition(this.cameras.main.width - 80, 8);
+                if (this.health >= 10) {
+                    this.health = 9999;
+                    this.healthText.setText('∞');
+                    this.healthText.setPosition(this.cameras.main.width - 80, 8);
                 } else {
-                    this.testoVita.setText('' + this.vita);
+                    this.healthText.setText('' + this.health);
                 }
                 break;
 
-            case 'coniglio':
-                const istanzaConiglio = new Coniglio({
-                    giocoVelocita: this.velocitaCorrente
+            case 'rabbit':
+                const rabbitInstance = new Coniglio({
+                    giocoVelocita: this.currentSpeed
                 });
 
-                const velocitaOriginale = this.velocitaCorrente;
-                this.velocitaCorrente = istanzaConiglio.inizia();
+                const originalSpeed = this.currentSpeed;
+                this.currentSpeed = rabbitInstance.inizia();
 
                 this.time.delayedCall(5000, () => {
-                    this.velocitaCorrente = velocitaOriginale;
+                    this.currentSpeed = originalSpeed;
                 }, [], this);
                 break;
 
-            case 'tartaruga':
-                const BonusTartaruga = new Tartaruga({
-                    velocitaAttuale: this.velocitaCorrente,
+            case 'turtle':
+                const turtleBonus = new Tartaruga({
+                    velocitaAttuale: this.currentSpeed,
                 });
 
-                const velocitaPrecedente = this.velocitaCorrente;
-                const nuovaVelocita = BonusTartaruga.inizia();
+                const previousSpeed = this.currentSpeed;
+                const newSpeed = turtleBonus.inizia();
 
-                this.velocitaCorrente = nuovaVelocita;
+                this.currentSpeed = newSpeed;
 
-                if (this.velocitaCorrente !== velocitaPrecedente) {
+                if (this.currentSpeed !== previousSpeed) {
                     this.time.delayedCall(10000, () => {
-                        this.velocitaCorrente = velocitaPrecedente;
+                        this.currentSpeed = previousSpeed;
                     }, [], this);
                 }
                 break;
 
-            case 'fenice':
-                const BonusFenice = new Fenice({
+            case 'phoenix':
+                const phoenixBonus = new Fenice({
                     scene: this,
-                    player: this.Giocatore
+                    player: this.Player
                 });
 
-                BonusFenice.attivaInvincibilita();
+                phoenixBonus.attivaInvincibilita();
                 break;
         }
     }
 
-    private aumentareDifficolta(): void {
-        this.difficoltaCorrente += 0.2;
-        if (this.difficoltaCorrente > 5) {
-            this.difficoltaCorrente = 5;
+    private increaseDifficulty(): void {
+        this.currentDifficulty += 0.2;
+        if (this.currentDifficulty > 5) {
+            this.currentDifficulty = 5;
         }
     }
 
-    private generaMoneteRandom(): void {
-        if (Math.random() < 0.9) { 
-            const numeroPezzi = Phaser.Math.Between(2, 5);
-            
+    private generateRandomCoins(): void {
+        if (Math.random() < 0.9) {
+            const numCoins = Phaser.Math.Between(2, 5);
+
             const startX = this.cameras.main.width + 50;
-            
-            const hauteurMin = 80; 
-            const hauteurMax = 350; 
-            const hauteur = Phaser.Math.Between(hauteurMin, hauteurMax);
-            const y = this.cameras.main.height - hauteur;
-            
-            const tipoFormazione = Math.random();
-            
-            if (tipoFormazione < 0.25) {
-                for (let i = 0; i < numeroPezzi; i++) {
-                    this.creaMoneta(startX + (i * 40), y);
-                }
-            } else if (tipoFormazione < 0.5) {
-                for (let i = 0; i < numeroPezzi; i++) {
-                    this.creaMoneta(startX, y - (i * 40));
-                }
-            } else if (tipoFormazione < 0.75) {
-                for (let i = 0; i < numeroPezzi; i++) {
-                    this.creaMoneta(startX + (i * 40), y - (i * 40));
-                }
-            } else if (Math.random() < 0.2) { 
-                const y = this.cameras.main.height - Phaser.Math.Between(100, 250);
-                const numCoins = Phaser.Math.Between(8, 15); // Longue rangée
-                
+
+            const minHeight = 80;
+            const maxHeight = 350;
+            const height = Phaser.Math.Between(minHeight, maxHeight);
+            const y = this.cameras.main.height - height;
+
+            const formationType = Math.random();
+
+            if (formationType < 0.25) {
                 for (let i = 0; i < numCoins; i++) {
-                    this.creaMoneta(this.cameras.main.width + 50 + (i * 30), y);
+                    this.createCoin(startX + (i * 40), y);
+                }
+            } else if (formationType < 0.5) {
+                for (let i = 0; i < numCoins; i++) {
+                    this.createCoin(startX, y - (i * 40));
+                }
+            } else if (formationType < 0.75) {
+                for (let i = 0; i < numCoins; i++) {
+                    this.createCoin(startX + (i * 40), y - (i * 40));
+                }
+            } else if (Math.random() < 0.2) {
+                const y = this.cameras.main.height - Phaser.Math.Between(100, 250);
+                const numCoins = Phaser.Math.Between(8, 15); // Long row
+
+                for (let i = 0; i < numCoins; i++) {
+                    this.createCoin(this.cameras.main.width + 50 + (i * 30), y);
                 }
             } else {
-                const rayon = 50;
-                for (let i = 0; i < numeroPezzi; i++) {
-                    const angolo = (i / numeroPezzi) * Math.PI * 2;
-                    const offsetX = Math.cos(angolo) * rayon;
-                    const offsetY = Math.sin(angolo) * rayon;
-                    this.creaMoneta(startX + offsetX, y + offsetY);
+                const radius = 50;
+                for (let i = 0; i < numCoins; i++) {
+                    const angle = (i / numCoins) * Math.PI * 2;
+                    const offsetX = Math.cos(angle) * radius;
+                    const offsetY = Math.sin(angle) * radius;
+                    this.createCoin(startX + offsetX, y + offsetY);
                 }
             }
         }
-        
     }
 }

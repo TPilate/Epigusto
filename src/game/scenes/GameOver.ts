@@ -2,9 +2,9 @@ import { EventBus } from '../EventBus';
 import { Scene } from 'phaser';
 
 export class GameOver extends Scene {
-    telecamera: Phaser.Cameras.Scene2D.Camera;
-    sfondo: Phaser.GameObjects.Image;
-    testoFinale: Phaser.GameObjects.Text;
+    camera: Phaser.Cameras.Scene2D.Camera;
+    background: Phaser.GameObjects.Image;
+    finalText: Phaser.GameObjects.Text;
 
     constructor() {
         super('GameOver');
@@ -12,48 +12,47 @@ export class GameOver extends Scene {
 
     preload() {
         this.load.image('reload', './assets/retry_button.png');
-        this.load.image('pezzo', './assets/piece.png');
-        this.load.image('lodobolo', './assets/leaderboard.png');
+        this.load.image('piece', './assets/piece.png');
+        this.load.image('leaderboard', './assets/leaderboard.png');
     }
 
     create() {
-        this.telecamera = this.cameras.main
-        this.telecamera.setBackgroundColor(0xff0000);
+        this.camera = this.cameras.main
+        this.camera.setBackgroundColor(0xff0000);
 
-        this.sfondo = this.add.image(512, 384, 'background');
-        this.sfondo.setAlpha(0.5);
+        this.background = this.add.image(512, 384, 'background');
+        this.background.setAlpha(0.5);
 
-        this.testoFinale = this.add.text(512, 384, 'Game Over', {
+        this.finalText = this.add.text(512, 384, 'Game Over', {
             fontFamily: 'minecraft', fontSize: 64, color: '#ffffff',
             stroke: '#000000', strokeThickness: 8,
             align: 'center'
         }).setOrigin(0.5).setDepth(100);
 
-        const scalaPulsante = 0.7;
-        const scalaHover = 0.8;
-        const centroY = 520;
+        const buttonScale = 0.7;
+        const hoverScale = 0.8;
+        const centerY = 520;
         
-        const pulsanteRiprova = this.add.image(412, centroY, 'reload')
+        const retryButton = this.add.image(412, centerY, 'reload')
             .setOrigin(0.5)
-            .setScale(scalaPulsante)
+            .setScale(buttonScale)
             .setInteractive({ useHandCursor: true })
-            .on('pointerdown', () => this.cambiaSfondo())
-            .on('pointerover', () => pulsanteRiprova.setScale(scalaHover))
-            .on('pointerout', () => pulsanteRiprova.setScale(scalaPulsante));
+            .on('pointerdown', () => this.changeScene())
+            .on('pointerover', () => retryButton.setScale(hoverScale))
+            .on('pointerout', () => retryButton.setScale(buttonScale));
         
-        const pulsanteClassifica = this.add.image(612, centroY, 'lodobolo')
+        const leaderboardButton = this.add.image(612, centerY, 'leaderboard')
             .setOrigin(0.5)
-            .setScale(scalaPulsante)
+            .setScale(buttonScale)
             .setInteractive({ useHandCursor: true })
             .on('pointerdown', () => this.scene.start('LeaderBoard'))
-            .on('pointerover', () => pulsanteClassifica.setScale(scalaHover))
-            .on('pointerout', () => pulsanteClassifica.setScale(scalaPulsante));
+            .on('pointerover', () => leaderboardButton.setScale(hoverScale))
+            .on('pointerout', () => leaderboardButton.setScale(buttonScale));
 
         EventBus.emit('current-scene-ready', this);
     }
     
-
-    cambiaSfondo() {
+    changeScene() {
         this.scene.start('MainMenu');
     }
 }

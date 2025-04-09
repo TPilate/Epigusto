@@ -34,7 +34,7 @@ export class Preloader extends Scene
 
         this.load.image('logo', 'logo.png');
         this.load.image('star', 'star.png');
-        this.load.spritesheet('fenice', 'phoenix.png', { 
+        this.load.spritesheet('phoenix', 'phoenix.png', { 
             frameWidth: 32,
             frameHeight: 32
         });
@@ -45,7 +45,7 @@ export class Preloader extends Scene
 
         this.anims.create({
             key: 'phoenix_fly',
-            frames: this.anims.generateFrameNumbers('fenice', { start: 0, end: 5 }),
+            frames: this.anims.generateFrameNumbers('phoenix', { start: 0, end: 5 }),
             frameRate: 10,
             repeat: -1
         });
