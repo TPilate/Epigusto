@@ -1,10 +1,10 @@
 import * as Phaser from 'phaser';
 import { EventBus } from '../EventBus';
-import { Pezzo } from '../items/Pezzo';
-import { Cuore } from '../items/Cuore';
-import { Coniglio } from '../items/Coniglio';
-import { Tartaruga } from '../items/Tartaruga';
-import { Fenice } from '../items/Fenice';
+import { Piece } from '../items/Piece';
+import { Heart } from '../items/Heart';
+import { Rabbit } from '../items/Rabbit';
+import { Turtle } from '../items/Turtle';
+import { Phoenix } from '../items/Phoenix';
 
 export class Game extends Phaser.Scene {
     camera: Phaser.Cameras.Scene2D.Camera;
@@ -790,12 +790,12 @@ export class Game extends Phaser.Scene {
     private applyBonus(selectedBonus: any): void {
         switch (selectedBonus.name) {
             case 'coin':
-                const coinBonus = new Pezzo({
-                    velocitaAttuale: this.currentSpeed,
-                    aggiornaPunteggio: this.score
+                const coinBonus = new Piece({
+                    currentSpeed: this.currentSpeed,
+                    updateScore: this.score
                 });
 
-                const newScore = coinBonus.inizia();
+                const newScore = coinBonus.start();
 
                 this.score = newScore;
                 this.targetScore = newScore;
@@ -803,11 +803,11 @@ export class Game extends Phaser.Scene {
                 break;
 
             case 'heart':
-                const heartBonus = new Cuore({
-                    cuore: this.health
+                const heartBonus = new Heart({
+                    currentHealth: this.health
                 });
 
-                const newHealth = heartBonus.inizia();
+                const newHealth = heartBonus.start();
 
                 this.health = newHealth;
 
@@ -821,12 +821,12 @@ export class Game extends Phaser.Scene {
                 break;
 
             case 'rabbit':
-                const rabbitInstance = new Coniglio({
-                    giocoVelocita: this.currentSpeed
+                const rabbitInstance = new Rabbit({
+                    gameSpeed: this.currentSpeed
                 });
 
                 const originalSpeed = this.currentSpeed;
-                this.currentSpeed = rabbitInstance.inizia();
+                this.currentSpeed = rabbitInstance.start();
 
                 this.time.delayedCall(5000, () => {
                     this.currentSpeed = originalSpeed;
@@ -834,12 +834,12 @@ export class Game extends Phaser.Scene {
                 break;
 
             case 'turtle':
-                const turtleBonus = new Tartaruga({
-                    velocitaAttuale: this.currentSpeed,
+                const turtleBonus = new Turtle({
+                    currentSpeed: this.currentSpeed,
                 });
 
                 const previousSpeed = this.currentSpeed;
-                const newSpeed = turtleBonus.inizia();
+                const newSpeed = turtleBonus.start();
 
                 this.currentSpeed = newSpeed;
 
@@ -851,12 +851,12 @@ export class Game extends Phaser.Scene {
                 break;
 
             case 'phoenix':
-                const phoenixBonus = new Fenice({
+                const phoenixBonus = new Phoenix({
                     scene: this,
                     player: this.Player
                 });
 
-                phoenixBonus.attivaInvincibilita();
+                phoenixBonus.activateInvincibility();
                 break;
         }
     }

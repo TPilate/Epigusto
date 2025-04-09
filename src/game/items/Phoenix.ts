@@ -1,21 +1,21 @@
-export interface ConfigurazioneFenice {
+export interface PhoenixConfiguration {
   scene: Phaser.Scene;
   player: Phaser.Physics.Arcade.Sprite;
 }
 
-export class Fenice {
+export class Phoenix {
   private scene: Phaser.Scene;
   private player: Phaser.Physics.Arcade.Sprite;
-  private durataInvincibilita: number = 5000;
-  private testoInvincibilita: Phaser.GameObjects.Text | null = null;
-  private spriteFenice: Phaser.GameObjects.Sprite | null = null;
+  private invincibilityDuration: number = 5000;
+  private invincibilityText: Phaser.GameObjects.Text | null = null;
+  private phoenixSprite: Phaser.GameObjects.Sprite | null = null;
 
-  constructor(config: ConfigurazioneFenice) {
+  constructor(config: PhoenixConfiguration) {
     this.scene = config.scene;
     this.player = config.player;
   }
 
-  attivaInvincibilita(): void {
+  activateInvincibility(): void {
     this.player.setData('invincible', true);
     
     this.scene.tweens.add({
@@ -26,66 +26,66 @@ export class Fenice {
             this.player.setVisible(false);
             this.player.setAlpha(1);
             
-            this.spriteFenice = this.scene.add.sprite(
+            this.phoenixSprite = this.scene.add.sprite(
                 this.player.x,
                 this.player.y,
-                'fenice'
+                'phoenix'
             );
             
-            this.spriteFenice.play('phoenix_fly');
-            this.spriteFenice.setScale(3);
+            this.phoenixSprite.play('phoenix_fly');
+            this.phoenixSprite.setScale(3);
 
-            const tweenFluttuante = this.scene.tweens.add({
-                targets: this.spriteFenice,
+            const floatingTween = this.scene.tweens.add({
+                targets: this.phoenixSprite,
                 y: '-=10',
                 duration: 1000,
                 yoyo: true,
                 repeat: -1
             });
             
-            this.spriteFenice.setData('floatTween', tweenFluttuante);
+            this.phoenixSprite.setData('floatTween', floatingTween);
         }
     });
     
-    this.testoInvincibilita = this.scene.add.text(
+    this.invincibilityText = this.scene.add.text(
         this.scene.cameras.main.width / 2,
         100,
-        'INVINCIBILE!',
+        'INVINCIBLE!',
         {
             fontFamily: 'minecraft',
             fontSize: '32px',
             color: '#ff0000'
         }
     );
-    this.testoInvincibilita.setOrigin(0.5);
+    this.invincibilityText.setOrigin(0.5);
     
-    const aggiornaPosizioneFenice = () => {
-        if (this.spriteFenice && this.player) {
-            this.spriteFenice.x = this.player.x;
+    const updatePhoenixPosition = () => {
+        if (this.phoenixSprite && this.player) {
+            this.phoenixSprite.x = this.player.x;
         }
     };
     
-    const eventoAggiornamento = this.scene.events.on('update', aggiornaPosizioneFenice);
+    const updateEvent = this.scene.events.on('update', updatePhoenixPosition);
     
     this.scene.time.delayedCall(
-        this.durataInvincibilita - 500,
+        this.invincibilityDuration - 500,
         () => {
-            if (this.spriteFenice) {
-                const tweenFluttuante = this.spriteFenice.getData('floatTween');
-                if (tweenFluttuante) {
-                    tweenFluttuante.stop();
+            if (this.phoenixSprite) {
+                const floatingTween = this.phoenixSprite.getData('floatTween');
+                if (floatingTween) {
+                    floatingTween.stop();
                 }
                 
-                this.spriteFenice.y = this.player.y;
+                this.phoenixSprite.y = this.player.y;
                 
                 this.scene.tweens.add({
-                    targets: this.spriteFenice,
+                    targets: this.phoenixSprite,
                     alpha: 0,
                     duration: 500,
                     onComplete: () => {
-                        if (this.spriteFenice) {
-                            this.spriteFenice.destroy();
-                            this.spriteFenice = null;
+                        if (this.phoenixSprite) {
+                            this.phoenixSprite.destroy();
+                            this.phoenixSprite = null;
                         }
                         
                         this.player.setVisible(true);
@@ -101,12 +101,12 @@ export class Fenice {
                 });
             }
             
-            if (this.testoInvincibilita) {
-                this.testoInvincibilita.destroy();
-                this.testoInvincibilita = null;
+            if (this.invincibilityText) {
+                this.invincibilityText.destroy();
+                this.invincibilityText = null;
             }
             
-            this.scene.events.off('update', aggiornaPosizioneFenice);
+            this.scene.events.off('update', updatePhoenixPosition);
         },
         [],
         this
