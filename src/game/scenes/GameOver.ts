@@ -11,9 +11,9 @@ export class GameOver extends Scene {
     }
 
     preload() {
-        this.load.image('reload', './assets/pulsante_riprova.png');
-        this.load.image('pezzo', './assets/pezzo.png');
-        this.load.image('lodobolo', './assets/lodobolo.png');
+        this.load.image('reload', './assets/retry_button.png');
+        this.load.image('pezzo', './assets/piece.png');
+        this.load.image('lodobolo', './assets/leaderboard.png');
     }
 
     create() {

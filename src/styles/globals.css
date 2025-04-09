@@ -32,7 +32,7 @@ body {
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    background-image: url("/assets/pulsante_di_avvio.png");
+    background-image: url("/assets/start_button.png");
     background-size: 100% 100%;
     background-repeat: no-repeat;
     background-color: transparent;
@@ -62,7 +62,7 @@ body {
     padding-bottom: 50px;
     border-radius: 4px;
     border: 2px solid transparent;
-    background-image: url("/assets/immissione_del_nome.png");
+    background-image: url("/assets/entry_of_name.png");
     background-size: 100% 100%;
     background-repeat: no-repeat;
     background-color: transparent;

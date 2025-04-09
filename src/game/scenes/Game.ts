@@ -55,26 +55,26 @@ export class Game extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('sfondo', 'assets/sfondo.png');
-        this.load.image('sfondono', 'assets/sfondo.png');
-        this.load.spritesheet('suelo', 'assets/suolo.png', {
+        this.load.image('sfondo', 'assets/background.png');
+        this.load.image('sfondono', 'assets/background.png');
+        this.load.spritesheet('suelo', 'assets/ground.png', {
             frameWidth: 16,
             frameHeight: 16
         });
-        this.load.image('pezzo', 'assets/pezzo.png');
-        this.load.image('cuore', 'assets/cuore.png');
-        this.load.atlas('carattere', './assets/PersonaggioFoglioSprite.png', './assets/PersonaggioFoglio.json');
-        this.load.atlas('animaPezzo', './assets/animaPezzo.png', './assets/animaPezzo.json');
+        this.load.image('pezzo', 'assets/piece.png');
+        this.load.image('cuore', 'assets/heart.png');
+        this.load.atlas('carattere', './assets/CharacterSheetSprite.png', './assets/CharacterSheet.json');
+        this.load.atlas('animaPezzo', './assets/coinsAnim.png', './assets/coinsAnim.json');
 
-        this.load.spritesheet('trappola', 'assets/trappola_per_orsi.png', {
+        this.load.spritesheet('trappola', 'assets/trap_for_paths.png', {
             frameWidth: 16,
             frameHeight: 16
         });
 
-        this.load.image('coniglio', 'assets/coniglio.png');
-        this.load.image('tartaruga', 'assets/tartaruga.png');
+        this.load.image('coniglio', 'assets/rabbit.png');
+        this.load.image('tartaruga', 'assets/turtle.png');
 
-        this.load.image('crate', 'assets/cassa.png')
+        this.load.image('crate', 'assets/case.png')
         this.load.audio('crate-sound', 'assets/audio/apertura_del_caso.m4a');
         this.load.audio('foresta', 'assets/audio/foresta.mp3');
         this.load.audio('temaPrincpale', 'assets/audio/temaPrincipale.mp3');
@@ -357,7 +357,7 @@ export class Game extends Phaser.Scene {
         const moneta = this.physics.add.sprite(
             posizioneX,
             posizioneY || this.cameras.main.height - 57 - Phaser.Math.Between(50, 200),
-            'animaPezzo'
+            'coinsAnim'
         );
         
         moneta.play('rotate', true);

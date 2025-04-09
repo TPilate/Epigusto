@@ -14,10 +14,10 @@ export class LeaderBoard extends Scene
 
 
     preload(){
-        this.load.image('reload', './assets/pulsante_riprova.png');
-        this.load.image('pezzo', './assets/pezzo.png');
-        this.load.image('leaderBoard', './assets/tabellone_segnapunti.png');
-        this.load.image('board','./assets/immissione_del_nome.png')
+        this.load.image('reload', './assets/retry_button.png');
+        this.load.image('pezzo', './assets/piece.png');
+        this.load.image('leaderBoard', './assets/scoreboard.png');
+        this.load.image('board','./assets/entry_of_name.png')
     }
 
     create ()

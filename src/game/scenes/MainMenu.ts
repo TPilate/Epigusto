@@ -18,10 +18,10 @@ export class MainMenu extends Scene {
     }
 
     preload() {
-        this.load.image('input-bg', './assets/immissione_del_nome.png');
-        this.load.image('button-bg', './assets/pulsante_di_avvio.png');
+        this.load.image('input-bg', './assets/entry_of_name.png');
+        this.load.image('button-bg', './assets/start_button.png');
         this.load.audio('temaMenu', 'assets/audio/temaMenu.m4a');
-        this.load.image('lodobolo', './assets/lodobolo.png');
+        this.load.image('lodobolo', './assets/leaderboard.png');
 
     }
 
