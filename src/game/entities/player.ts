@@ -9,7 +9,6 @@ export class Giocatore extends Phaser.Physics.Arcade.Sprite {
     constructor(scene: Phaser.Scene, x: number, y: number) {
         super(scene, x, y, 'idle'); 
 
-        // Ajout du sprite à la scène et activation de la physique
         scene.add.existing(this);
         // scene.physics.add.existing(this);
 
