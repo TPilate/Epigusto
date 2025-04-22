@@ -80,9 +80,7 @@ export class PauseMenu {
     show(): void {
         this.menuContainer.setVisible(true);
         
-        // Réduire le volume des sons
         if (this.sounds.forestSound?.isPlaying) {
-            // Autre approche avec cast de type
             (this.sounds.forestSound as any).setVolume(0.05);
         }
         if (this.sounds.mainTheme?.isPlaying) {
@@ -94,7 +92,6 @@ export class PauseMenu {
     hide(): void {
         this.menuContainer.setVisible(false);
         
-        // Restaurer le volume des sons
         if (this.sounds.forestSound?.isPlaying) {
             (this.sounds.forestSound as any).setVolume(0.2);
         }
