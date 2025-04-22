@@ -5,6 +5,7 @@ import { Heart } from '../items/Heart';
 import { Rabbit } from '../items/Rabbit';
 import { Turtle } from '../items/Turtle';
 import { Phoenix } from '../items/Phoenix';
+import { PauseMenu } from '../ui/PauseMenu';
 
 export class Game extends Phaser.Scene {
     camera: Phaser.Cameras.Scene2D.Camera;
@@ -41,6 +42,8 @@ export class Game extends Phaser.Scene {
     deathTheme: any;
     coinSound: any;
     groundCollision: Phaser.Physics.Arcade.StaticBody;
+    private isPause: boolean = false;
+    private pauseMenu: PauseMenu;
 
     constructor() {
         super('Game');
@@ -284,6 +287,25 @@ export class Game extends Phaser.Scene {
 
         this.groundCollision = this.physics.add.staticBody(0, this.cameras.main.height - 30, this.cameras.main.width, 20);
         this.physics.add.collider(this.Player, this.groundCollision);
+
+        this.input.keyboard?.on('keydown-ESC', () => {
+            this.togglePause();
+        })
+
+        this.pauseMenu = new PauseMenu({
+            scene: this,
+            onResume: () => this.togglePause(),
+            onQuit: () => {
+                this.forestSound.stop();
+                this.mainTheme.stop();
+                this.scene.start('MainMenu');
+            },
+            sounds: {
+                forestSound: this.forestSound,
+                mainTheme: this.mainTheme
+            }
+        });
+
     }
 
     easterEgg() {
@@ -447,6 +469,10 @@ export class Game extends Phaser.Scene {
     }
 
     update(delta: number) {
+
+        if (this.isPause) {
+            return;
+        }
 
         if (this.health <= 0) {
             this.currentSpeed = 0;
@@ -909,6 +935,23 @@ export class Game extends Phaser.Scene {
                     this.createCoin(startX + offsetX, y + offsetY);
                 }
             }
+        }
+    }
+    private togglePause(): void {
+        this.isPause = !this.isPause;
+
+        if (this.isPause) {
+            this.physics.pause();
+            this.anims.pauseAll();
+            this.scoreIncrementTimer.paused = true;
+            this.time.paused = true;
+            this.pauseMenu.show();
+        } else {
+            this.physics.resume();
+            this.anims.resumeAll();
+            this.scoreIncrementTimer.paused = false;
+            this.time.paused = false;
+            this.pauseMenu.hide();
         }
     }
 }
