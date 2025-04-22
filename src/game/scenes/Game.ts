@@ -549,18 +549,28 @@ export class Game extends Phaser.Scene {
         this.mainTheme.stop();
         this.deathTheme.play();
 
-        // Save the score
-        const playerInfo = JSON.stringify({
-            name: this.userName,
-            score: this.score
-        });
-
-        let nextIndex = 1;
-        while (localStorage.getItem(`playerInfo${nextIndex}`)) {
-            nextIndex++;
-        }
-
-        localStorage.setItem(`playerInfo${nextIndex}`, playerInfo);
+        // Save the score to API instead of localStorage
+        const saveScore = async () => {
+            try {
+                const response = await fetch('/api/scores', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        pseudo: this.userName,
+                        score: this.score
+                    })
+                });
+                
+                if (!response.ok) {
+                    console.error('Failed to save score to server');
+                }
+            } catch (error) {
+                console.error('Error saving score:', error);
+            }
+        };
+        
+        // Call the async function
+        saveScore();
 
         this.time.delayedCall(5000, () => {
             this.scene.start('GameOver');
