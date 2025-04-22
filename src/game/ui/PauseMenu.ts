@@ -82,10 +82,12 @@ export class PauseMenu {
         
         // Réduire le volume des sons
         if (this.sounds.forestSound?.isPlaying) {
-            this.sounds.forestSound.setVolume(0.05);
+            // Autre approche avec cast de type
+            (this.sounds.forestSound as any).setVolume(0.05);
         }
         if (this.sounds.mainTheme?.isPlaying) {
-            this.sounds.mainTheme.setVolume(0.05);
+            (this.sounds.mainTheme as any).setVolume(0.05);
+
         }
     }
 
@@ -94,10 +96,10 @@ export class PauseMenu {
         
         // Restaurer le volume des sons
         if (this.sounds.forestSound?.isPlaying) {
-            this.sounds.forestSound.setVolume(0.2);
+            (this.sounds.forestSound as any).setVolume(0.2);
         }
         if (this.sounds.mainTheme?.isPlaying) {
-            this.sounds.mainTheme.setVolume(0.3);
+            (this.sounds.mainTheme as any).setVolume(0.3);
         }
     }
 
